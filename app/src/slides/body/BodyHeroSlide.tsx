@@ -25,6 +25,8 @@ export const BodyHeroSlide = forwardRef<HTMLDivElement, Props>(function BodyHero
           highlightWords={splitHighlightInput(slide.headingHighlight)}
           subcaptionEnabled={slide.subcaptionEnabled}
           subcaption={slide.subcaption}
+          subcaptionSize={slide.subcaptionSize}
+          subcaptionHighlightWords={splitHighlightInput(slide.subcaptionHighlight)}
           maxWidth={slide.imageEnabled ? '62%' : '80%'}
         />
         <div

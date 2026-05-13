@@ -1,8 +1,10 @@
 import { forwardRef } from 'react';
 import { BodySlideHost } from './BodySlideHost';
 import { BodySlide } from '../../state/bodySlide';
+import { splitHighlightInput } from '../../state/useSpotlightDraft';
 import { COLORS, RADII } from '../../tokens';
 import { PillLabel } from '../parts/PillLabel';
+import { Highlight } from '../parts/Highlight';
 import { HlQuoteMini } from '../parts/cards/HlQuoteMini';
 
 type Props = { slide: BodySlide; pageNum: number; pageTotal: number };
@@ -75,14 +77,17 @@ export const BodyQuoteSlide = forwardRef<HTMLDivElement, Props>(function BodyQuo
         {slide.subcaptionEnabled && slide.subcaption && (
           <div
             style={{
-              fontSize: 24,
+              fontSize: slide.subcaptionSize,
               fontWeight: 500,
               lineHeight: 1.45,
               color: COLORS.text.mutedHigh,
               whiteSpace: 'pre-wrap'
             }}
           >
-            {slide.subcaption}
+            <Highlight
+              text={slide.subcaption}
+              words={splitHighlightInput(slide.subcaptionHighlight)}
+            />
           </div>
         )}
 
@@ -90,7 +95,11 @@ export const BodyQuoteSlide = forwardRef<HTMLDivElement, Props>(function BodyQuo
 
         {slide.quoteEmphasisEnabled && slide.quoteEmphasis && (
           <div style={{ marginTop: 'auto', borderRadius: RADII.card }}>
-            <HlQuoteMini text={slide.quoteEmphasis} />
+            <HlQuoteMini
+              text={slide.quoteEmphasis}
+              padding={slide.cardPadding}
+              fontScale={slide.cardFontScale}
+            />
           </div>
         )}
       </div>

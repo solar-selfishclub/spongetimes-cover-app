@@ -43,7 +43,7 @@ export type DecoSize = 'small' | 'medium' | 'large';
 
 export type QuoteMultiCard = { enabled: boolean; text: string; by: string };
 export type FlowStep = { enabled: boolean; person: string; quote: string };
-export type SideItem = { enabled: boolean; title: string; body: string };
+export type SideItem = { enabled: boolean; label: string; title: string; body: string };
 export type GridCard = { enabled: boolean; tag: string; title: string; body: string };
 
 export type BodySlide = {
@@ -66,6 +66,12 @@ export type BodySlide = {
   // Subcaption (option)
   subcaptionEnabled: boolean;
   subcaption: string;
+  subcaptionSize: number;
+  subcaptionHighlight: string; // comma-separated up to 2
+
+  // Card box sizing (applies to all white cards on this slide)
+  cardPadding: number;     // px
+  cardFontScale: number;   // multiplier (0.7~1.5)
 
   // Pill label (option)
   pillEnabled: boolean;
@@ -129,6 +135,11 @@ export function makeDefaultBodySlide(template: BodyTemplate = 'hero'): BodySlide
 
     subcaptionEnabled: false,
     subcaption: '한 줄 부캡션',
+    subcaptionSize: 24,
+    subcaptionHighlight: '',
+
+    cardPadding: 24,
+    cardFontScale: 1.0,
 
     pillEnabled: false,
     pillText: '오늘의 키워드',
@@ -170,11 +181,11 @@ export function makeDefaultBodySlide(template: BodyTemplate = 'hero'): BodySlide
     ],
 
     sideItems: [
-      { enabled: true, title: '항목 1', body: '간단한 설명 한 줄.' },
-      { enabled: true, title: '항목 2', body: '간단한 설명 한 줄.' },
-      { enabled: true, title: '항목 3', body: '간단한 설명 한 줄.' },
-      { enabled: false, title: '', body: '' },
-      { enabled: false, title: '', body: '' }
+      { enabled: true, label: '미션 1', title: '클로드 코드로\n인터뷰 스킬 늘리기', body: '' },
+      { enabled: true, label: '미션 2', title: 'OS 벤치마킹\n→ 만들어보기', body: '' },
+      { enabled: true, label: '미션 3', title: 'AI 없이\nSNS 글 쓰기', body: '' },
+      { enabled: false, label: '', title: '', body: '' },
+      { enabled: false, label: '', title: '', body: '' }
     ],
 
     gridCards: [

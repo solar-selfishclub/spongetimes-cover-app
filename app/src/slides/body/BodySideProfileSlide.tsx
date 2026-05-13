@@ -33,6 +33,8 @@ export const BodySideProfileSlide = forwardRef<HTMLDivElement, Props>(
               highlightWords={splitHighlightInput(slide.headingHighlight)}
               subcaptionEnabled={slide.subcaptionEnabled}
               subcaption={slide.subcaption}
+              subcaptionSize={slide.subcaptionSize}
+              subcaptionHighlightWords={splitHighlightInput(slide.subcaptionHighlight)}
               maxWidth={slide.imageEnabled ? '100%' : '78%'}
             />
             <div
@@ -43,7 +45,14 @@ export const BodySideProfileSlide = forwardRef<HTMLDivElement, Props>(
               }}
             >
               {visible.map((item, i) => (
-                <SideItem key={i} title={item.title} body={item.body} />
+                <SideItem
+                  key={i}
+                  label={item.label}
+                  title={item.title}
+                  body={item.body}
+                  padding={slide.cardPadding}
+                  fontScale={slide.cardFontScale}
+                />
               ))}
             </div>
           </div>

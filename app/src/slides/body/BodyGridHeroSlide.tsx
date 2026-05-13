@@ -27,6 +27,8 @@ export const BodyGridHeroSlide = forwardRef<HTMLDivElement, Props>(function Body
           highlightWords={splitHighlightInput(slide.headingHighlight)}
           subcaptionEnabled={slide.subcaptionEnabled}
           subcaption={slide.subcaption}
+          subcaptionSize={slide.subcaptionSize}
+          subcaptionHighlightWords={splitHighlightInput(slide.subcaptionHighlight)}
         />
         <div
           style={{
@@ -39,7 +41,14 @@ export const BodyGridHeroSlide = forwardRef<HTMLDivElement, Props>(function Body
           }}
         >
           {visible.map((card, i) => (
-            <GhCard key={i} tag={card.tag} title={card.title} body={card.body} />
+            <GhCard
+              key={i}
+              tag={card.tag}
+              title={card.title}
+              body={card.body}
+              padding={slide.cardPadding}
+              fontScale={slide.cardFontScale}
+            />
           ))}
         </div>
       </div>

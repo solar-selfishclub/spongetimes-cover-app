@@ -113,22 +113,66 @@ export function BodyEditor({ slide, index, publisher, contentType, patch }: Prop
         </div>
       )}
 
-      {/* === Subcaption === */}
+      {/* === Subcaption (서브 글씨) === */}
       <hr className="editor-divider" />
       <CheckboxField
-        label="부캡션"
+        label="부캡션 (서브 글씨)"
         value={slide.subcaptionEnabled}
         onChange={(v) => patch({ subcaptionEnabled: v })}
       />
       {slide.subcaptionEnabled && (
-        <TextField
-          label="부캡션 텍스트"
-          value={slide.subcaption}
-          onChange={(v) => patch({ subcaption: v })}
-          multiline
-          rows={2}
-        />
+        <>
+          <TextField
+            label="부캡션 텍스트"
+            value={slide.subcaption}
+            onChange={(v) => patch({ subcaption: v })}
+            multiline
+            rows={2}
+          />
+          <RangeField
+            label="부캡션 글자 크기"
+            value={slide.subcaptionSize}
+            min={14}
+            max={56}
+            unit="px"
+            onChange={(v) => patch({ subcaptionSize: v })}
+          />
+          <TextField
+            label="부캡션 형광펜 단어 (쉼표 구분, 최대 2)"
+            value={slide.subcaptionHighlight}
+            onChange={(v) => patch({ subcaptionHighlight: v })}
+            helper="부캡션 안에서 정확히 일치하는 단어만 노란 형광펜 처리됨"
+          />
+        </>
       )}
+
+      {/* === Card box sizing === */}
+      <hr className="editor-divider" />
+      <div className="field">
+        <label>흰 카드 박스 크기</label>
+        <div className="helper" style={{ marginBottom: 8 }}>
+          이 슬라이드 안의 작은 흰 카드(사이드 / 인용 / 그리드 / 흐름 / 강조)에 일괄 적용
+        </div>
+      </div>
+      <div className="field-row">
+        <RangeField
+          label="카드 안쪽 여백"
+          value={slide.cardPadding}
+          min={10}
+          max={48}
+          unit="px"
+          onChange={(v) => patch({ cardPadding: v })}
+        />
+        <RangeField
+          label="카드 글자 배율"
+          value={slide.cardFontScale}
+          min={0.7}
+          max={1.5}
+          step={0.05}
+          unit="x"
+          onChange={(v) => patch({ cardFontScale: v })}
+        />
+      </div>
 
       {/* === Inline pill label (above heading) === */}
       <CheckboxField

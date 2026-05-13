@@ -29,6 +29,8 @@ export const BodyFlowSlide = forwardRef<HTMLDivElement, Props>(function BodyFlow
           highlightWords={splitHighlightInput(slide.headingHighlight)}
           subcaptionEnabled={slide.subcaptionEnabled}
           subcaption={slide.subcaption}
+          subcaptionSize={slide.subcaptionSize}
+          subcaptionHighlightWords={splitHighlightInput(slide.subcaptionHighlight)}
         />
 
         <div
@@ -45,6 +47,8 @@ export const BodyFlowSlide = forwardRef<HTMLDivElement, Props>(function BodyFlow
               stepNum={displayIdx + 1}
               person={step.person}
               quote={step.quote}
+              padding={slide.cardPadding}
+              fontScale={slide.cardFontScale}
             />
           ))}
         </div>

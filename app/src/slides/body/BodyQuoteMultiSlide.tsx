@@ -25,6 +25,8 @@ export const BodyQuoteMultiSlide = forwardRef<HTMLDivElement, Props>(
             highlightWords={splitHighlightInput(slide.headingHighlight)}
             subcaptionEnabled={slide.subcaptionEnabled}
             subcaption={slide.subcaption}
+            subcaptionSize={slide.subcaptionSize}
+            subcaptionHighlightWords={splitHighlightInput(slide.subcaptionHighlight)}
           />
 
           <div
@@ -36,7 +38,13 @@ export const BodyQuoteMultiSlide = forwardRef<HTMLDivElement, Props>(
             }}
           >
             {visible.map((card, i) => (
-              <MiniQuoteCard key={i} text={card.text} by={card.by} />
+              <MiniQuoteCard
+                key={i}
+                text={card.text}
+                by={card.by}
+                padding={slide.cardPadding}
+                fontScale={slide.cardFontScale}
+              />
             ))}
           </div>
         </div>

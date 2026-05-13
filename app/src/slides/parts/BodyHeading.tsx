@@ -12,6 +12,8 @@ type Props = {
   highlightWords: string[];
   subcaptionEnabled: boolean;
   subcaption: string;
+  subcaptionSize?: number;
+  subcaptionHighlightWords?: string[];
   maxWidth?: string;
 };
 
@@ -26,6 +28,8 @@ export function BodyHeading({
   highlightWords,
   subcaptionEnabled,
   subcaption,
+  subcaptionSize = 24,
+  subcaptionHighlightWords = [],
   maxWidth = '80%'
 }: Props) {
   return (
@@ -52,15 +56,18 @@ export function BodyHeading({
       {subcaptionEnabled && subcaption && (
         <div
           style={{
-            fontSize: 24,
+            fontSize: subcaptionSize,
             fontWeight: 500,
             color: COLORS.text.mutedHigh,
             marginTop: 22,
             lineHeight: 1.45,
-            whiteSpace: 'pre-wrap'
+            whiteSpace: 'pre-wrap',
+            maxWidth: headingAlign === 'center' ? '100%' : maxWidth,
+            marginLeft: headingAlign === 'center' ? 'auto' : 0,
+            marginRight: headingAlign === 'center' ? 'auto' : 0
           }}
         >
-          {subcaption}
+          <Highlight text={subcaption} words={subcaptionHighlightWords} />
         </div>
       )}
     </div>
