@@ -3,8 +3,11 @@ import { useSpotlightDraft, splitHighlightInput } from './state/useSpotlightDraf
 import { CommonFields } from './form/editors/CommonFields';
 import { CoverEditor } from './form/editors/CoverEditor';
 import { CtaEditor } from './form/editors/CtaEditor';
+import { BodyEditor } from './form/editors/BodyEditor';
+import { BodyListManager } from './form/editors/BodyListManager';
 import { CoverSlide } from './slides/CoverSlide';
 import { CtaSlide } from './slides/CtaSlide';
+import { BodySlideRenderer } from './slides/body/BodySlideRenderer';
 import { downloadSlide } from './export/slideToPng';
 import { downloadAllAsZip } from './export/downloadAll';
 import { buildSlideOrder } from './slideOrder';
@@ -12,12 +15,13 @@ import { buildSlideOrder } from './slideOrder';
 const ACTIVE_SCALE = 0.55; // 1080 * 0.55 = 594, 1350 * 0.55 = 742.5
 
 export default function App() {
-  const { draft, update, reset } = useSpotlightDraft();
+  const { draft, update, reset, addBody, removeBody, moveBody, updateBody } = useSpotlightDraft();
   const [exporting, setExporting] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
 
-  const order = useMemo(() => buildSlideOrder(), []);
+  const order = useMemo(() => buildSlideOrder(draft.bodySlides), [draft.bodySlides]);
   const total = order.length;
+  const totalBody = draft.bodySlides.length;
 
   // Clamp index when slide list shrinks/grows
   useEffect(() => {
@@ -44,7 +48,11 @@ export default function App() {
   );
 
   function suffixForIdx(idx: number): string {
-    return order[idx].kind;
+    const e = order[idx];
+    if (e.kind === 'body') {
+      return `body-${draft.bodySlides[e.bodyIndex]?.template ?? 'unknown'}`;
+    }
+    return e.kind;
   }
 
   async function captureOne(idx: number) {
@@ -92,6 +100,17 @@ export default function App() {
             characterSize={draft.coverCharacterSize}
           />
         );
+      case 'body': {
+        const body = draft.bodySlides[entry.bodyIndex];
+        if (!body) return null;
+        return (
+          <BodySlideRenderer
+            slide={body}
+            pageNum={entry.bodyIndex + 1}
+            pageTotal={totalBody}
+          />
+        );
+      }
       case 'cta':
         return (
           <CtaSlide
@@ -131,6 +150,19 @@ export default function App() {
     switch (entry.kind) {
       case 'cover':
         return <CoverEditor draft={draft} update={update} />;
+      case 'body': {
+        const body = draft.bodySlides[entry.bodyIndex];
+        if (!body) return null;
+        return (
+          <BodyEditor
+            slide={body}
+            index={entry.bodyIndex}
+            publisher={draft.publisher}
+            contentType={draft.contentType}
+            patch={(p) => updateBody(entry.bodyIndex, p)}
+          />
+        );
+      }
       case 'cta':
         return <CtaEditor draft={draft} update={update} />;
     }
@@ -139,12 +171,26 @@ export default function App() {
   const goPrev = () => setCurrentIdx((i) => Math.max(0, i - 1));
   const goNext = () => setCurrentIdx((i) => Math.min(total - 1, i + 1));
 
+  const currentEntry = order[currentIdx];
+  const currentBodyIndex =
+    currentEntry?.kind === 'body' ? currentEntry.bodyIndex : null;
+
+  function handleAddBody(template: Parameters<typeof addBody>[0]) {
+    addBody(template);
+    // Jump to the newly added body slide (it becomes the last body, so index = 1 + prevBodyCount)
+    setCurrentIdx(1 + totalBody);
+  }
+
+  function handleJumpToBody(bodyIndex: number) {
+    setCurrentIdx(1 + bodyIndex);
+  }
+
   return (
     <div className="app-shell-v2">
       {/* TOP BAR */}
       <header className="topbar">
         <div className="topbar-title">
-          스폰지타임즈 표지 + CTA 생성기 <span className="topbar-sub">· mini</span>
+          스폰지타임즈 생성기 <span className="topbar-sub">· 표지 + 본문 + CTA</span>
         </div>
         <button
           type="button"
@@ -232,6 +278,15 @@ export default function App() {
         <aside className="editor">
           <CommonFields draft={draft} update={update} />
           <hr className="editor-divider" />
+          <BodyListManager
+            bodySlides={draft.bodySlides}
+            onAdd={handleAddBody}
+            onRemove={removeBody}
+            onMove={moveBody}
+            onJump={handleJumpToBody}
+            currentBodyIndex={currentBodyIndex}
+          />
+          <hr className="editor-divider" />
           {renderRightPanelEditor()}
 
           <div style={{ marginTop: 24, borderTop: '1px solid #E5E1D0', paddingTop: 18 }}>
@@ -252,7 +307,7 @@ export default function App() {
       <div className="offscreen-render-area" aria-hidden>
         {order.map((entry, i) => (
           <div
-            key={`${entry.kind}-${i}`}
+            key={`${entry.kind}-${i}-${entry.kind === 'body' ? draft.bodySlides[entry.bodyIndex]?.id : ''}`}
             ref={slideRefs.current[i]}
             style={{
               position: 'absolute',

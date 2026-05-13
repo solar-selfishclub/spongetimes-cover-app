@@ -119,6 +119,21 @@ export const CTA_POSES = [
   'thumbs-up with a smile, encouraging engagement'
 ];
 
+// Slowquick's 9-pose action sheet — DESIGN-BODY.md §4.
+// `desc` is the English-language pose description passed to the AI prompt.
+export const SLOWQUICK_9_POSES = [
+  { num: '01', label: '대표 / 손 흔들기', desc: 'iconic greeting pose — waving one hand, friendly smile' },
+  { num: '02', label: '받았다 / 트로피', desc: 'just received a mission — holding up a small trophy, proud expression' },
+  { num: '03', label: '머리 짚음', desc: 'stuck on a problem — one hand on the head, mildly frustrated expression' },
+  { num: '04', label: '엄지척', desc: 'thumbs up, smiling, approving gesture' },
+  { num: '05', label: '질문', desc: 'questioning pose — head slightly tilted, a question mark floating above' },
+  { num: '06', label: '노트북 작업', desc: 'sitting and working at a laptop, focused expression' },
+  { num: '07', label: '만세', desc: 'cheering — both arms raised, celebratory pose' },
+  { num: '08', label: '정자세', desc: 'neutral standing pose — no expression, plain transition stance' },
+  { num: '09', label: '화이트보드', desc: 'lecturer pose — explaining at a small whiteboard with a marker' }
+] as const;
+export type Slowquick9PoseNum = (typeof SLOWQUICK_9_POSES)[number]['num'];
+
 // Question pool — 03-cta.md > participant_spotlight
 export const SPOTLIGHT_QUESTION_POOL = [
   '오늘 소개된 6명 중 가장 인상 깊었던 분은? 댓글로 응원 보내주세요 👏',

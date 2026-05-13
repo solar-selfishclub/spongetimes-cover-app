@@ -153,6 +153,41 @@ export function SelectField<T extends string>({
   );
 }
 
+export function CheckboxField({
+  label,
+  value,
+  onChange,
+  helper
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+  helper?: string;
+}) {
+  return (
+    <div className="field" style={{ marginBottom: 8 }}>
+      <label
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 8,
+          cursor: 'pointer',
+          marginBottom: 0
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={value}
+          onChange={(e) => onChange(e.target.checked)}
+          style={{ width: 16, height: 16, margin: 0 }}
+        />
+        <span>{label}</span>
+      </label>
+      {helper && <div className="helper" style={{ marginLeft: 24, marginTop: 4 }}>{helper}</div>}
+    </div>
+  );
+}
+
 export function ImageField({
   label,
   value,

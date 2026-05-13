@@ -14,7 +14,7 @@ import {
 export type PromptInputs = {
   publisher: PublisherName;
   contentType: ContentType;
-  slideType: 'cover' | 'cta';
+  slideType: 'cover' | 'cta' | 'body';
   customPose?: string;
 };
 
@@ -35,6 +35,11 @@ export function generateCharacterPrompt({
     pose = customPose.trim();
   } else if (slideType === 'cta') {
     pose = pickRandom(CTA_POSES);
+  } else if (slideType === 'body') {
+    // For body slides without a chosen pose, fall back to a topic-shaped pool
+    // (same as cover) — pose # selection happens via the SLOWQUICK_9_POSES UI.
+    const pool = POSES_BY_CONTENT[contentType] ?? POSES_FALLBACK;
+    pose = pickRandom(pool);
   } else {
     const pool = POSES_BY_CONTENT[contentType] ?? POSES_FALLBACK;
     pose = pickRandom(pool);
