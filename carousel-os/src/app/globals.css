@@ -1,0 +1,366 @@
+@import "tailwindcss";
+
+/* ── Gmarket Sans ────────────────────────────────── */
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('/fonts/GmarketSansLight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('/fonts/GmarketSansMedium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('/fonts/GmarketSansBold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── CSS 변수 ─────────────────────────────────────── */
+:root {
+  --color-cover-bg: #FEE67A;
+  --color-body-bg:  #FDFCEA;
+  --color-text:     #000000;
+  --color-highlight: #87CEEB;
+  --font-main: 'GmarketSans', 'Noto Sans KR', sans-serif;
+}
+
+/* ── 기본 리셋 ───────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-main);
+  color: var(--color-text);
+  background: #f5f5f5;
+}
+
+/* ── 슬라이드 캔버스 ──────────────────────────────── */
+.slide-canvas {
+  width: 1080px;
+  height: 1350px;
+  position: relative;
+  overflow: hidden;
+  transform-origin: top left;
+  font-family: var(--font-main);
+}
+
+/* ── 하이라이트 마크 ──────────────────────────────── */
+.hl-mark {
+  background: var(--color-highlight);
+  color: var(--color-text);
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ── 앱 레이아웃 ──────────────────────────────────── */
+.studio-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.studio-editor {
+  width: 40%;
+  min-width: 360px;
+  max-width: 520px;
+  height: 100%;
+  overflow-y: auto;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+.studio-preview {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  background: #f0f0ee;
+  padding: 32px 24px;
+}
+
+/* ── 탑바 ─────────────────────────────────────────── */
+.studio-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.studio-topbar h1 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── 버튼 ─────────────────────────────────────────── */
+.btn-primary {
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-main);
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.btn-primary:hover { opacity: 0.8; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  color: #000;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #d1d5db;
+  font-family: var(--font-main);
+  transition: border-color 0.15s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { border-color: #9ca3af; }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── 폼 필드 ──────────────────────────────────────── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: var(--font-main);
+  color: #111;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.field-input:focus,
+.field-textarea:focus {
+  border-color: #FEE67A;
+  background: #fff;
+}
+
+.field-helper {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* ── 탭바 ─────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+
+.tab-item {
+  flex: 1;
+  min-width: 56px;
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: var(--font-main);
+  color: #9ca3af;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-item.active {
+  color: #000;
+  border-bottom-color: #000;
+}
+
+/* ── 에디터 본문 ──────────────────────────────────── */
+.editor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 6px;
+}
+
+/* ── 미리보기 패널 ────────────────────────────────── */
+.preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.preview-frame-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.preview-frame-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9ca3af;
+  letter-spacing: 0.04em;
+}
+
+.preview-frame {
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  flex-shrink: 0;
+  transition: box-shadow 0.2s;
+}
+.preview-frame.active {
+  box-shadow: 0 0 0 3px #000, 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* ── 공통 필드 영역 ────────────────────────────────── */
+.common-fields-section {
+  padding: 16px 20px;
+  background: #fffdf0;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.common-fields-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+/* ── 상단 이미지 애니메이션 keyframes ───────────────── */
+@keyframes float {
+  0%, 100% { transform: translate(-50%, calc(-50% - 20px)); }
+  50%       { transform: translate(-50%, calc(-50% + 20px)); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translate(-50%, -50%); animation-timing-function: ease-in; }
+  50%       { transform: translate(-50%, calc(-50% - 30px)); animation-timing-function: ease-out; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25%       { transform: translate(calc(-50% - 15px), -50%); }
+  75%       { transform: translate(calc(-50% + 15px), -50%); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%       { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes slide-lr {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50%       { transform: translate(calc(-50% + 30px), -50%); }
+}
+
+/* ── 이미지 업로드 ──────────────────────────────────── */
+.image-upload-area {
+  border: 1.5px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: #9ca3af;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.image-upload-area:hover {
+  border-color: #9ca3af;
+  background: #fafafa;
+}
+
+.image-preview-thumb {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.image-clear-btn {
+  font-size: 11px;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-main);
+}
