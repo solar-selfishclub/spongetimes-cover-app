@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ContentType, CtaMessageFont, PublisherName } from '../tokens';
+import {
+  BodySlide,
+  BodyTemplate,
+  hydrateBodySlide,
+  makeDefaultBodySlide
+} from './bodySlide';
 
 export type SpotlightDraft = {
   publisher: PublisherName;
@@ -15,6 +21,8 @@ export type SpotlightDraft = {
   coverCharacterX: number; // 0–100, percent from left (anchors character center)
   coverCharacterY: number; // 0–100, percent from top (anchors character center)
   coverCharacterSize: number; // percent of canvas width (10–80)
+  // Body
+  bodySlides: BodySlide[];
   // CTA
   ctaLabel: string;
   ctaQuestion: string;
@@ -53,6 +61,7 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   coverCharacterX: 72,
   coverCharacterY: 67,
   coverCharacterSize: 64,
+  bodySlides: [],
   ctaLabel: '💬 댓글로 이야기해요',
   ctaQuestion: '오늘 소개된 6명 중\n가장 인상 깊었던 분은?\n댓글로 응원 보내주세요 👏',
   ctaQuestionHighlight: '가장 인상 깊었던 분',
@@ -83,7 +92,10 @@ function load(): SpotlightDraft {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_DRAFT;
     const parsed = JSON.parse(raw) as Partial<SpotlightDraft>;
-    return { ...DEFAULT_DRAFT, ...parsed };
+    const bodySlides = Array.isArray(parsed.bodySlides)
+      ? parsed.bodySlides.map((b) => hydrateBodySlide(b as Partial<BodySlide>))
+      : [];
+    return { ...DEFAULT_DRAFT, ...parsed, bodySlides };
   } catch {
     return DEFAULT_DRAFT;
   }
@@ -108,7 +120,49 @@ export function useSpotlightDraft() {
     setDraft(DEFAULT_DRAFT);
   }
 
-  return { draft, setDraft, update, reset };
+  function addBody(template: BodyTemplate = 'hero') {
+    setDraft((d) => ({
+      ...d,
+      bodySlides: [...d.bodySlides, makeDefaultBodySlide(template)]
+    }));
+  }
+
+  function removeBody(index: number) {
+    setDraft((d) => ({
+      ...d,
+      bodySlides: d.bodySlides.filter((_, i) => i !== index)
+    }));
+  }
+
+  function moveBody(index: number, direction: -1 | 1) {
+    setDraft((d) => {
+      const next = [...d.bodySlides];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return d;
+      [next[index], next[target]] = [next[target], next[index]];
+      return { ...d, bodySlides: next };
+    });
+  }
+
+  function updateBody(index: number, patch: Partial<BodySlide>) {
+    setDraft((d) => {
+      const next = [...d.bodySlides];
+      if (!next[index]) return d;
+      next[index] = { ...next[index], ...patch };
+      return { ...d, bodySlides: next };
+    });
+  }
+
+  return {
+    draft,
+    setDraft,
+    update,
+    reset,
+    addBody,
+    removeBody,
+    moveBody,
+    updateBody
+  };
 }
 
 export function splitHighlightInput(raw: string): string[] {
