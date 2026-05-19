@@ -1,0 +1,27 @@
+:root {
+  --canvas-w: 1080px;
+  --canvas-h: 1350px;
+
+  --bg-cover: #FFE67A;
+  --bg-body: #FFFBED;
+  --bg-cta: #FFFBED;
+
+  --card-white: #FFFFFF;
+  --card-yellow: #FFE67A;
+  --card-dark: #1A1F36;
+
+  --text-primary: #1A1F36;
+  --text-on-dark: #FFE67A;
+  --muted-low: rgba(26, 31, 54, 0.35);
+  --muted-mid: rgba(26, 31, 54, 0.55);
+  --muted-high: rgba(26, 31, 54, 0.7);
+
+  --highlighter: rgba(255, 152, 0, 0.55);
+
+  --radius-card: 12px;
+  --radius-small: 8px;
+  --radius-pill: 999px;
+  --radius-follow: 16px;
+
+  --font-family: Pretendard, "Pretendard Variable", "Noto Sans KR", sans-serif;
+}
