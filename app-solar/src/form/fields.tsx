@@ -1,5 +1,15 @@
-import { ChangeEvent, useRef } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
+import { removeBackground } from '@imgly/background-removal';
 import { PUBLISHER_NAMES, PublisherName } from '../tokens';
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 
 export function TextField({
   label,
@@ -165,28 +175,75 @@ export function ImageField({
   helper?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [autoRemoveBg, setAutoRemoveBg] = useState(true);
+  const [status, setStatus] = useState<'idle' | 'processing' | 'error'>('idle');
 
-  function handleFile(e: ChangeEvent<HTMLInputElement>) {
+  async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+    e.target.value = '';
+
+    if (!autoRemoveBg) {
+      const dataUrl = await blobToDataUrl(file);
+      onChange(dataUrl);
+      return;
+    }
+
+    setStatus('processing');
+    try {
+      const cleaned = await removeBackground(file);
+      const dataUrl = await blobToDataUrl(cleaned);
+      onChange(dataUrl);
+      setStatus('idle');
+    } catch (err) {
+      console.error('background removal failed', err);
+      const fallback = await blobToDataUrl(file);
+      onChange(fallback);
+      setStatus('error');
+    }
   }
+
+  const processing = status === 'processing';
 
   return (
     <div className="field">
       <label>{label}</label>
       <div
         className="image-drop"
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !processing && inputRef.current?.click()}
+        style={processing ? { opacity: 0.6, cursor: 'wait' } : undefined}
       >
-        {value ? (
+        {processing ? (
+          <span>배경 제거 중… (첫 실행은 모델 다운로드로 10초 정도 걸려요)</span>
+        ) : value ? (
           <img src={value} alt="" />
         ) : (
           <span>클릭해서 이미지 업로드 (PNG/JPG)</span>
         )}
       </div>
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginTop: 6,
+          fontSize: 12,
+          color: '#555',
+          cursor: 'pointer'
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={autoRemoveBg}
+          onChange={(e) => setAutoRemoveBg(e.target.checked)}
+        />
+        업로드 시 배경 자동 제거 (누끼)
+      </label>
+      {status === 'error' && (
+        <div className="helper" style={{ color: '#c0392b' }}>
+          배경 제거에 실패해 원본을 사용합니다.
+        </div>
+      )}
       {value && (
         <button
           type="button"
