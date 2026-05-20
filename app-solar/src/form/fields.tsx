@@ -2,11 +2,6 @@ import { ChangeEvent, useRef, useState } from 'react';
 import { removeBackground } from '@imgly/background-removal';
 import { PUBLISHER_NAMES, PublisherName } from '../tokens';
 
-// Full-precision ISNet — slower + larger download (~88MB) but best edge
-// detection. Trying this to see if it helps white-on-white cases like the
-// cheese character's white sleeve being clipped with the background.
-const RM_BG_CONFIG = { model: 'isnet' as const };
-
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -203,7 +198,7 @@ export function ImageField({
 
     setStatus('processing');
     try {
-      const cleaned = await removeBackground(file, RM_BG_CONFIG);
+      const cleaned = await removeBackground(file);
       const dataUrl = await blobToDataUrl(cleaned);
       onChange(dataUrl);
       setStatus('idle');
@@ -227,7 +222,7 @@ export function ImageField({
       setStatus('processing');
       try {
         const blob = await fetch(source).then((r) => r.blob());
-        const cleaned = await removeBackground(blob, RM_BG_CONFIG);
+        const cleaned = await removeBackground(blob);
         const cleanedUrl = await blobToDataUrl(cleaned);
         onChange(cleanedUrl);
         setStatus('idle');
@@ -253,7 +248,7 @@ export function ImageField({
         style={processing ? { opacity: 0.6, cursor: 'wait' } : undefined}
       >
         {processing ? (
-          <span>배경 제거 중… (첫 실행은 모델 다운로드로 15~20초 걸려요)</span>
+          <span>배경 제거 중… (첫 실행은 모델 다운로드로 10초 정도 걸려요)</span>
         ) : value ? (
           <img src={value} alt="" />
         ) : (
