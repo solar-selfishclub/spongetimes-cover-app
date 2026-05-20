@@ -345,6 +345,18 @@ input, textarea, select {
   transform-origin: top left;
 }
 
+/* Tighter vertical rhythm inside the highlighter color tweak box */
+.highlighter-controls .field {
+  margin-bottom: 4px;
+}
+.highlighter-controls .field label {
+  margin-bottom: 0;
+}
+.highlighter-controls .field input[type='range'] {
+  margin: 0;
+  padding: 0;
+}
+
 /* Highlight (orange marker) */
 .hl-mark {
   background: linear-gradient(transparent 58%, var(--highlighter) 58%);

@@ -19,9 +19,10 @@ export function HighlighterControls({ draft, update }: Props) {
 
   return (
     <div
+      className="highlighter-controls"
       style={{
         marginTop: 8,
-        padding: '12px 14px',
+        padding: '10px 12px',
         borderRadius: 8,
         background: 'rgba(0, 0, 0, 0.03)',
         border: '1px solid rgba(0, 0, 0, 0.06)'
@@ -32,7 +33,7 @@ export function HighlighterControls({ draft, update }: Props) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 10
+          marginBottom: 6
         }}
       >
         <div
@@ -67,7 +68,7 @@ export function HighlighterControls({ draft, update }: Props) {
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          marginBottom: 12,
+          marginBottom: 6,
           fontSize: 14,
           cursor: 'pointer'
         }}
