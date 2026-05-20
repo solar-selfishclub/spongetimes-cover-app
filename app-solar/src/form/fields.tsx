@@ -225,19 +225,25 @@ export function ImageField({
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 6,
+          justifyContent: 'space-between',
+          gap: 8,
           marginTop: 6,
-          fontSize: 12,
+          padding: '8px 12px',
+          borderRadius: 8,
+          background: 'rgba(0, 0, 0, 0.03)',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          fontSize: 13,
           color: '#555',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          whiteSpace: 'nowrap'
         }}
       >
+        <span>업로드 시 배경 자동 제거 (누끼)</span>
         <input
           type="checkbox"
           checked={autoRemoveBg}
           onChange={(e) => setAutoRemoveBg(e.target.checked)}
         />
-        업로드 시 배경 자동 제거 (누끼)
       </label>
       {status === 'error' && (
         <div className="helper" style={{ color: '#c0392b' }}>
