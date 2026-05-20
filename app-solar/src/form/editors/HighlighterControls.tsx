@@ -1,4 +1,4 @@
-import { SpotlightDraft } from '../../state/useSpotlightDraft';
+import { DEFAULT_DRAFT, SpotlightDraft } from '../../state/useSpotlightDraft';
 import { RangeField } from '../fields';
 
 type Props = {
@@ -10,6 +10,13 @@ type Props = {
 // State is global per draft, so the same widget is rendered under each editor's
 // highlight-word input — adjustments here flow to all <Highlight> instances.
 export function HighlighterControls({ draft, update }: Props) {
+  function resetHighlighter() {
+    update('highlighterUseYellow', DEFAULT_DRAFT.highlighterUseYellow);
+    update('highlighterOpacity', DEFAULT_DRAFT.highlighterOpacity);
+    update('highlighterSaturation', DEFAULT_DRAFT.highlighterSaturation);
+    update('highlighterLightness', DEFAULT_DRAFT.highlighterLightness);
+  }
+
   return (
     <div
       style={{
@@ -22,14 +29,37 @@ export function HighlighterControls({ draft, update }: Props) {
     >
       <div
         style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: 'var(--muted-mid)',
-          marginBottom: 10,
-          letterSpacing: '-0.01em'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 10
         }}
       >
-        형광펜 색 조절
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--muted-mid)',
+            letterSpacing: '-0.01em'
+          }}
+        >
+          형광펜 색 조절
+        </div>
+        <button
+          type="button"
+          onClick={resetHighlighter}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(0,0,0,0.15)',
+            borderRadius: 6,
+            padding: '4px 10px',
+            fontSize: 12,
+            color: 'var(--muted-mid)',
+            cursor: 'pointer'
+          }}
+        >
+          기본값으로 되돌리기
+        </button>
       </div>
 
       <label
