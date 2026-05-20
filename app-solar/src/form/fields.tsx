@@ -177,15 +177,22 @@ export function ImageField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [autoRemoveBg, setAutoRemoveBg] = useState(true);
   const [status, setStatus] = useState<'idle' | 'processing' | 'error'>('idle');
+  // Keep the raw original (pre-cutout) so the checkbox can toggle both ways.
+  // This is session-local — after a page refresh the persisted value (which may
+  // already be the cut-out version) is all we have, so toggling off won't
+  // restore the original unless the user re-uploads.
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
 
+    const rawDataUrl = await blobToDataUrl(file);
+    setOriginalImage(rawDataUrl);
+
     if (!autoRemoveBg) {
-      const dataUrl = await blobToDataUrl(file);
-      onChange(dataUrl);
+      onChange(rawDataUrl);
       return;
     }
 
@@ -197,9 +204,36 @@ export function ImageField({
       setStatus('idle');
     } catch (err) {
       console.error('background removal failed', err);
-      const fallback = await blobToDataUrl(file);
-      onChange(fallback);
+      onChange(rawDataUrl);
       setStatus('error');
+    }
+  }
+
+  async function handleToggle(checked: boolean) {
+    setAutoRemoveBg(checked);
+    if (!value) return; // no image yet — just remember the preference
+
+    if (checked) {
+      // Off → On: apply cutout to the current image. Treat current value as
+      // the original if we don't have one cached (e.g. after page refresh).
+      const source = originalImage ?? value;
+      if (!originalImage) setOriginalImage(value);
+
+      setStatus('processing');
+      try {
+        const blob = await fetch(source).then((r) => r.blob());
+        const cleaned = await removeBackground(blob);
+        const cleanedUrl = await blobToDataUrl(cleaned);
+        onChange(cleanedUrl);
+        setStatus('idle');
+      } catch (err) {
+        console.error('background removal failed', err);
+        setStatus('error');
+      }
+    } else {
+      // On → Off: revert to original if we still have it
+      if (originalImage) onChange(originalImage);
+      // else: no-op — original was lost (page refresh), user can re-upload
     }
   }
 
@@ -242,7 +276,8 @@ export function ImageField({
         <input
           type="checkbox"
           checked={autoRemoveBg}
-          onChange={(e) => setAutoRemoveBg(e.target.checked)}
+          disabled={processing}
+          onChange={(e) => handleToggle(e.target.checked)}
         />
       </label>
       {status === 'error' && (
