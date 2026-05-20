@@ -4,12 +4,30 @@ import { TextField, ImageField, NumberField, RangeField, SelectField } from '../
 import { CharacterPromptCopy } from '../../character/CharacterPromptCopy';
 import { HighlighterControls } from './HighlighterControls';
 
-function ResetButton({ onClick }: { onClick: () => void }) {
+function GroupHeader({ label, onReset }: { label: string; onReset: () => void }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+        marginTop: 4
+      }}
+    >
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--muted-mid)',
+          letterSpacing: '-0.01em'
+        }}
+      >
+        {label}
+      </div>
       <button
         type="button"
-        onClick={onClick}
+        onClick={onReset}
         style={{
           background: 'transparent',
           border: '1px solid rgba(0,0,0,0.15)',
@@ -68,7 +86,7 @@ export function CoverEditor({ draft, update }: Props) {
         rows={3}
         helper="줄바꿈은 엔터로. 2~3줄 권장."
       />
-      <ResetButton onClick={resetTitleStyle} />
+      <GroupHeader label="타이틀 스타일" onReset={resetTitleStyle} />
       <RangeField
         label="타이틀 크기"
         value={draft.mainTitleSize}
@@ -111,7 +129,7 @@ export function CoverEditor({ draft, update }: Props) {
         onChange={(v) => update('coverCharacterImage', v)}
         helper="투명 배경 PNG 권장"
       />
-      <ResetButton onClick={resetCharacterPlacement} />
+      <GroupHeader label="캐릭터 배치" onReset={resetCharacterPlacement} />
       <RangeField
         label="캐릭터 크기"
         value={draft.coverCharacterSize}
