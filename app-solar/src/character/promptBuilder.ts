@@ -60,11 +60,18 @@ export function generateCharacterPrompt({
     `question mark, etc.) may be included — but keep them small and supporting, never ` +
     `dominating the frame.\n\n` +
     `Background — VERY IMPORTANT:\n` +
-    `- Use a completely flat solid pure white (#FFFFFF) background.\n` +
+    `- Use a completely flat solid pure magenta (#FF00FF) background.\n` +
+    `- Reason: the character has white shirt parts and may hold light-colored props ` +
+    `(laptop, paper, tablet). A magenta background gives maximum color contrast so ` +
+    `automatic background-removal can cleanly separate every part of the character ` +
+    `including white clothing and silver/gray devices.\n` +
+    `- DO NOT use white, gray, black, yellow, or red for the background — those colors ` +
+    `appear on the character or its props and will get cut out by mistake.\n` +
     `- DO NOT draw a transparency checkerboard pattern (no gray/white squares).\n` +
     `- DO NOT draw any grid, dots, gradient, vignette, or texture in the background.\n` +
-    `- DO NOT add a drop shadow under the character.\n` +
-    `- The background must be one single uninterrupted #FFFFFF color so the character ` +
+    `- DO NOT add a drop shadow under the character (shadows blend with the magenta and ` +
+    `confuse the cutout).\n` +
+    `- The background must be one single uninterrupted #FF00FF color so the character ` +
     `can be cleanly cut out afterward.\n` +
     `- Centered composition, full body visible, comfortable padding around the character.`
   );
