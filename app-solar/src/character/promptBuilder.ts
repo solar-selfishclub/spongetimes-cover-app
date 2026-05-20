@@ -73,6 +73,16 @@ export function generateCharacterPrompt({
     `confuse the cutout).\n` +
     `- The background must be one single uninterrupted #FF00FF color so the character ` +
     `can be cleanly cut out afterward.\n` +
-    `- Centered composition, full body visible, comfortable padding around the character.`
+    `- Centered composition, full body visible, comfortable padding around the character.\n\n` +
+    `Lighting — equally important, do not ignore:\n` +
+    `- Use NEUTRAL WHITE studio lighting on the character.\n` +
+    `- The magenta background must NOT cast any color reflection, glow, or rim light ` +
+    `onto the character. No pink/magenta tint on the white shirt, on the yellow cheese ` +
+    `body, on the red overalls, or on any prop.\n` +
+    `- Render the character as if it were lit independently from its surroundings — ` +
+    `the magenta is just a flat backdrop, NOT a light source.\n` +
+    `- White surfaces (shirt, paper, daisies, etc.) must read as PURE WHITE in the ` +
+    `final image, not slightly pink. This is critical for the post-process step ` +
+    `that removes the background.`
   );
 }
