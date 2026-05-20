@@ -272,7 +272,7 @@ export function ImageField({
           whiteSpace: 'nowrap'
         }}
       >
-        <span>업로드 시 배경 자동 제거 (누끼)</span>
+        <span>배경 자동 제거 (누끼)</span>
         <input
           type="checkbox"
           checked={autoRemoveBg}
