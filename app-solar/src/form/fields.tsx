@@ -11,75 +11,6 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-// Post-process the AI-cutout result to scrub residual magenta — both fully
-// magenta pixels the model missed AND magenta-tinted edge fringe ("spill").
-// Safe to always run: spongetimes characters use no magenta hues, so any
-// magenta-ish pixel is by definition background that leaked through.
-//
-// Strategy: measure each pixel's "magenta-ness" as min(R, B) - G. Higher value
-// means more magenta. Then:
-//   - magentaness >= 100 → fully transparent (definitely background)
-//   - magentaness 30..100 → fade alpha proportional to how magenta it is,
-//     AND pull R/B toward G to kill the pink tint. Edge pixels get softer
-//     instead of leaving a visible halo.
-//   - magentaness < 30 → leave alone (likely just legitimate character edge)
-//
-// Character palette safety check (cheese mascot, signature colors):
-//   - Yellow cheese, white shirt, red overalls, black shoes, gold trophy,
-//     publisher signature colors (blue/red/orange/purple) — all have
-//     magentaness == 0. Untouched.
-async function scrubMagentaResidue(blob: Blob): Promise<Blob> {
-  const url = URL.createObjectURL(blob);
-  try {
-    const img = await loadImage(url);
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return blob;
-    ctx.drawImage(img, 0, 0);
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-      if (a === 0) continue;
-
-      const magentaness = Math.min(r, b) - g;
-      if (magentaness >= 100) {
-        // Solid magenta residue → fully transparent
-        data[i + 3] = 0;
-      } else if (magentaness >= 30) {
-        // Edge spill — fade alpha + neutralize color toward gray
-        const fade = (magentaness - 30) / 70; // 0..1
-        data[i + 3] = Math.round(a * (1 - fade));
-        data[i] = Math.round(r - (r - g) * fade);
-        data[i + 2] = Math.round(b - (b - g) * fade);
-      }
-      // magentaness < 30 → untouched (clean character pixel)
-    }
-    ctx.putImageData(imageData, 0, 0);
-
-    return await new Promise<Blob>((resolve) =>
-      canvas.toBlob((out) => resolve(out ?? blob), 'image/png')
-    );
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
 export function TextField({
   label,
   value,
@@ -268,8 +199,7 @@ export function ImageField({
     setStatus('processing');
     try {
       const cleaned = await removeBackground(file);
-      const scrubbed = await scrubMagentaResidue(cleaned);
-      const dataUrl = await blobToDataUrl(scrubbed);
+      const dataUrl = await blobToDataUrl(cleaned);
       onChange(dataUrl);
       setStatus('idle');
     } catch (err) {
@@ -293,8 +223,7 @@ export function ImageField({
       try {
         const blob = await fetch(source).then((r) => r.blob());
         const cleaned = await removeBackground(blob);
-        const scrubbed = await scrubMagentaResidue(cleaned);
-        const cleanedUrl = await blobToDataUrl(scrubbed);
+        const cleanedUrl = await blobToDataUrl(cleaned);
         onChange(cleanedUrl);
         setStatus('idle');
       } catch (err) {
