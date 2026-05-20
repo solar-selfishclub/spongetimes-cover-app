@@ -1,8 +1,30 @@
 import { CONTENT_TYPE_SUGGESTIONS } from '../../tokens';
-import { SpotlightDraft } from '../../state/useSpotlightDraft';
+import { DEFAULT_DRAFT, SpotlightDraft } from '../../state/useSpotlightDraft';
 import { TextField, ImageField, NumberField, RangeField, SelectField } from '../fields';
 import { CharacterPromptCopy } from '../../character/CharacterPromptCopy';
 import { HighlighterControls } from './HighlighterControls';
+
+function ResetButton({ onClick }: { onClick: () => void }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          background: 'transparent',
+          border: '1px solid rgba(0,0,0,0.15)',
+          borderRadius: 6,
+          padding: '4px 10px',
+          fontSize: 12,
+          color: 'var(--muted-mid)',
+          cursor: 'pointer'
+        }}
+      >
+        기본값으로 되돌리기
+      </button>
+    </div>
+  );
+}
 
 type Props = {
   draft: SpotlightDraft;
@@ -10,6 +32,17 @@ type Props = {
 };
 
 export function CoverEditor({ draft, update }: Props) {
+  function resetTitleStyle() {
+    update('mainTitleSize', DEFAULT_DRAFT.mainTitleSize);
+    update('mainTitleAlign', DEFAULT_DRAFT.mainTitleAlign);
+    update('mainTitleTopOffset', DEFAULT_DRAFT.mainTitleTopOffset);
+  }
+  function resetCharacterPlacement() {
+    update('coverCharacterSize', DEFAULT_DRAFT.coverCharacterSize);
+    update('coverCharacterX', DEFAULT_DRAFT.coverCharacterX);
+    update('coverCharacterY', DEFAULT_DRAFT.coverCharacterY);
+  }
+
   return (
     <div className="form-section">
       <h2>표지 편집</h2>
@@ -35,6 +68,7 @@ export function CoverEditor({ draft, update }: Props) {
         rows={3}
         helper="줄바꿈은 엔터로. 2~3줄 권장."
       />
+      <ResetButton onClick={resetTitleStyle} />
       <RangeField
         label="타이틀 크기"
         value={draft.mainTitleSize}
@@ -74,6 +108,7 @@ export function CoverEditor({ draft, update }: Props) {
         onChange={(v) => update('coverCharacterImage', v)}
         helper="투명 배경 PNG 권장"
       />
+      <ResetButton onClick={resetCharacterPlacement} />
       <RangeField
         label="캐릭터 크기"
         value={draft.coverCharacterSize}
