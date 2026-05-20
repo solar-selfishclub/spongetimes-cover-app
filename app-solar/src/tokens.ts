@@ -36,13 +36,34 @@ export const PUBLISHERS: Record<
   PublisherName,
   { hex: string; colorName: 'blue' | 'red' | 'orange' | 'purple' }
 > = {
-  봄: { hex: '#4490E2', colorName: 'blue' },
-  솔라: { hex: '#E63946', colorName: 'red' },
-  슬로우퀵: { hex: '#FF6A00', colorName: 'orange' },
-  키노: { hex: '#8B5CF6', colorName: 'purple' }
+  봄: { hex: '#55C0EF', colorName: 'blue' },
+  솔라: { hex: '#E13634', colorName: 'red' },
+  슬로우퀵: { hex: '#F97C07', colorName: 'orange' },
+  키노: { hex: '#744FC1', colorName: 'purple' }
 };
 
 export const PUBLISHER_NAMES: PublisherName[] = ['봄', '솔라', '슬로우퀵', '키노'];
+
+// Convert "#RRGGBB" → "rgba(r, g, b, a)" so we can layer the signature color
+// onto the highlighter with the same alpha the original orange used.
+export function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Highlighter colors derived from each publisher's signature hex.
+// Alphas (0.55 main, 0.32 subtle) are inherited from the original fixed
+// orange highlighter — only the hue swaps per publisher.
+export function highlighterColors(publisher: PublisherName) {
+  const { hex } = PUBLISHERS[publisher];
+  return {
+    main: hexToRgba(hex, 0.55),
+    subtle: hexToRgba(hex, 0.32)
+  };
+}
 
 // Free-text — publishers each work on different content so we don't constrain
 // to the 4 spec options. The values below are kept as suggestion examples for

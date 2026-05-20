@@ -355,7 +355,7 @@ input, textarea, select {
 
 /* Subtler highlight for body text (description areas) — thinner + lower opacity */
 .hl-subtle .hl-mark {
-  background: linear-gradient(transparent 72%, rgba(255, 152, 0, 0.32) 72%);
+  background: linear-gradient(transparent 72%, var(--highlighter-subtle) 72%);
 }
 
 /* Pill label */

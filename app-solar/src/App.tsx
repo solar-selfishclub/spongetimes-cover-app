@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useSpotlightDraft, splitHighlightInput } from './state/useSpotlightDraft';
+import { highlighterColors } from './tokens';
 import { CommonFields } from './form/editors/CommonFields';
 import { CoverEditor } from './form/editors/CoverEditor';
 import { CtaEditor } from './form/editors/CtaEditor';
@@ -42,6 +43,16 @@ export default function App() {
     () => splitHighlightInput(draft.ctaQuestionHighlight),
     [draft.ctaQuestionHighlight]
   );
+
+  // Publisher-signature highlighter color — flows through CSS vars down to
+  // every <Highlight> rendered inside the app (visible + offscreen capture).
+  const highlighterStyle = useMemo<CSSProperties>(() => {
+    const hl = highlighterColors(draft.publisher);
+    return {
+      ['--highlighter' as never]: hl.main,
+      ['--highlighter-subtle' as never]: hl.subtle
+    };
+  }, [draft.publisher]);
 
   function suffixForIdx(idx: number): string {
     return order[idx].kind;
@@ -140,7 +151,7 @@ export default function App() {
   const goNext = () => setCurrentIdx((i) => Math.min(total - 1, i + 1));
 
   return (
-    <div className="app-shell-v2">
+    <div className="app-shell-v2" style={highlighterStyle}>
       {/* TOP BAR */}
       <header className="topbar">
         <div className="topbar-title">
