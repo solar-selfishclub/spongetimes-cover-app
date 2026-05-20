@@ -1,6 +1,7 @@
 import { SpotlightDraft } from '../../state/useSpotlightDraft';
 import { TextField, ImageField, RangeField, SelectField } from '../fields';
 import { CTA_LABEL_POOL, CTA_MESSAGE_FONTS, SPOTLIGHT_QUESTION_POOL } from '../../tokens';
+import { HighlighterControls } from './HighlighterControls';
 
 const CUSTOM_SENTINEL = '__custom__';
 
@@ -88,6 +89,7 @@ export function CtaEditor({ draft, update }: Props) {
         value={draft.ctaQuestionHighlight}
         onChange={(v) => update('ctaQuestionHighlight', v)}
       />
+      <HighlighterControls draft={draft} update={update} />
       <TextField
         label="발행자 자유 멘트 (캐릭터 옆)"
         value={draft.ctaCharacterMessage}

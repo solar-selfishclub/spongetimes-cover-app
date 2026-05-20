@@ -1,0 +1,85 @@
+import { SpotlightDraft } from '../../state/useSpotlightDraft';
+import { RangeField } from '../fields';
+
+type Props = {
+  draft: SpotlightDraft;
+  update: <K extends keyof SpotlightDraft>(key: K, value: SpotlightDraft[K]) => void;
+};
+
+// Highlighter color tweak group: yellow override + opacity/saturation/lightness.
+// State is global per draft, so the same widget is rendered under each editor's
+// highlight-word input — adjustments here flow to all <Highlight> instances.
+export function HighlighterControls({ draft, update }: Props) {
+  return (
+    <div
+      style={{
+        marginTop: 8,
+        padding: '12px 14px',
+        borderRadius: 8,
+        background: 'rgba(0, 0, 0, 0.03)',
+        border: '1px solid rgba(0, 0, 0, 0.06)'
+      }}
+    >
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--muted-mid)',
+          marginBottom: 10,
+          letterSpacing: '-0.01em'
+        }}
+      >
+        형광펜 색 조절
+      </div>
+
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 12,
+          fontSize: 14,
+          cursor: 'pointer'
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={draft.highlighterUseYellow}
+          onChange={(e) => update('highlighterUseYellow', e.target.checked)}
+        />
+        <span>기본 노란색 사용</span>
+        <span style={{ fontSize: 12, color: 'var(--muted-mid)' }}>
+          (발행자 시그니처 색 무시)
+        </span>
+      </label>
+
+      <RangeField
+        label="불투명도"
+        value={draft.highlighterOpacity}
+        onChange={(v) => update('highlighterOpacity', v)}
+        min={0}
+        max={100}
+        step={1}
+        unit="%"
+      />
+      <RangeField
+        label="채도"
+        value={draft.highlighterSaturation}
+        onChange={(v) => update('highlighterSaturation', v)}
+        min={0}
+        max={200}
+        step={1}
+        unit="%"
+      />
+      <RangeField
+        label="명도"
+        value={draft.highlighterLightness}
+        onChange={(v) => update('highlighterLightness', v)}
+        min={0}
+        max={200}
+        step={1}
+        unit="%"
+      />
+    </div>
+  );
+}

@@ -6,6 +6,7 @@ export type SpotlightDraft = {
   week: number;
   contentType: ContentType;
   // Highlighter color tweaks (applied on top of publisher's signature hex)
+  highlighterUseYellow: boolean; // override publisher color with classic yellow
   highlighterOpacity: number;    // 0–100, percent (alpha)
   highlighterSaturation: number; // 0–200, percent (100 = base hue saturation)
   highlighterLightness: number;  // 0–200, percent (100 = base hue lightness)
@@ -48,6 +49,7 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   publisher: '키노',
   week: 1,
   contentType: '콘텐츠 유형을 입력하세요',
+  highlighterUseYellow: false,
   highlighterOpacity: 55,
   highlighterSaturation: 100,
   highlighterLightness: 100,

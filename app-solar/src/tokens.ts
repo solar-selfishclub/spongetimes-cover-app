@@ -102,19 +102,23 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-// Highlighter colors derived from each publisher's signature hex.
-// User adjusts opacity / saturation / lightness on top of the signature color.
+// Classic highlighter yellow — used when user opts out of publisher signature.
+export const HIGHLIGHTER_YELLOW = '#FFEB3B';
+
+// Highlighter colors derived from each publisher's signature hex (or yellow override).
+// User adjusts opacity / saturation / lightness on top of the chosen base color.
 //   - opacity:    0–100 (percent)             — main fill alpha
 //   - saturation: 0–200 (percent, 100 = base) — HSL saturation multiplier
 //   - lightness:  0–200 (percent, 100 = base) — HSL lightness multiplier
+//   - useYellow:  if true, ignore publisher color and use HIGHLIGHTER_YELLOW
 // Subtle alpha stays proportional to the original 0.32/0.55 ratio so body text
 // keeps the lighter wash even when the main bar is dialed up.
 export function highlighterColors(
   publisher: PublisherName,
-  opts: { opacity: number; saturation: number; lightness: number }
+  opts: { opacity: number; saturation: number; lightness: number; useYellow: boolean }
 ): { main: string; subtle: string } {
-  const { hex } = PUBLISHERS[publisher];
-  const hsl = hexToHsl(hex);
+  const baseHex = opts.useYellow ? HIGHLIGHTER_YELLOW : PUBLISHERS[publisher].hex;
+  const hsl = hexToHsl(baseHex);
   const adjusted = hslToRgb(
     hsl.h,
     clamp01(hsl.s * (opts.saturation / 100)),

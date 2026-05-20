@@ -2,6 +2,7 @@ import { CONTENT_TYPE_SUGGESTIONS } from '../../tokens';
 import { SpotlightDraft } from '../../state/useSpotlightDraft';
 import { TextField, ImageField, NumberField, RangeField, SelectField } from '../fields';
 import { CharacterPromptCopy } from '../../character/CharacterPromptCopy';
+import { HighlighterControls } from './HighlighterControls';
 
 type Props = {
   draft: SpotlightDraft;
@@ -65,6 +66,7 @@ export function CoverEditor({ draft, update }: Props) {
         onChange={(v) => update('mainTitleHighlight', v)}
         helper="메인 타이틀 안에서 정확히 일치하는 단어/구절만 강조됨"
       />
+      <HighlighterControls draft={draft} update={update} />
       <ImageField
         label="표지 캐릭터 이미지"
         value={draft.coverCharacterImage}

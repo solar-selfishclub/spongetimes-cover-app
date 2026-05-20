@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useSpotlightDraft, splitHighlightInput } from './state/useSpotlightDraft';
-import { highlighterColors } from './tokens';
-import { CommonFields } from './form/editors/CommonFields';
+import { highlighterColors, PUBLISHER_NAMES, PublisherName } from './tokens';
 import { CoverEditor } from './form/editors/CoverEditor';
 import { CtaEditor } from './form/editors/CtaEditor';
 import { CoverSlide } from './slides/CoverSlide';
@@ -51,7 +50,8 @@ export default function App() {
     const hl = highlighterColors(draft.publisher, {
       opacity: draft.highlighterOpacity,
       saturation: draft.highlighterSaturation,
-      lightness: draft.highlighterLightness
+      lightness: draft.highlighterLightness,
+      useYellow: draft.highlighterUseYellow
     });
     return {
       ['--highlighter' as never]: hl.main,
@@ -61,7 +61,8 @@ export default function App() {
     draft.publisher,
     draft.highlighterOpacity,
     draft.highlighterSaturation,
-    draft.highlighterLightness
+    draft.highlighterLightness,
+    draft.highlighterUseYellow
   ]);
 
   function suffixForIdx(idx: number): string {
@@ -167,14 +168,45 @@ export default function App() {
         <div className="topbar-title">
           스폰지타임즈 표지 + CTA 생성기 <span className="topbar-sub">· mini</span>
         </div>
-        <button
-          type="button"
-          className="btn"
-          onClick={captureAll}
-          disabled={exporting}
-        >
-          {exporting ? '내보내는 중…' : `전체 PNG (${total}장 ZIP)`}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+          <label
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: 'var(--muted-mid)',
+              letterSpacing: '-0.01em'
+            }}
+          >
+            발행자
+          </label>
+          <select
+            value={draft.publisher}
+            onChange={(e) => update('publisher', e.target.value as PublisherName)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: '1px solid rgba(0,0,0,0.15)',
+              background: '#fff',
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            {PUBLISHER_NAMES.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="btn"
+            onClick={captureAll}
+            disabled={exporting}
+          >
+            {exporting ? '내보내는 중…' : `전체 PNG (${total}장 ZIP)`}
+          </button>
+        </div>
       </header>
 
       <div className="main-grid">
@@ -251,8 +283,6 @@ export default function App() {
 
         {/* RIGHT: editor for current slide */}
         <aside className="editor">
-          <CommonFields draft={draft} update={update} />
-          <hr className="editor-divider" />
           {renderRightPanelEditor()}
 
           <div style={{ marginTop: 24, borderTop: '1px solid #E5E1D0', paddingTop: 18 }}>
