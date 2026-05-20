@@ -24,6 +24,19 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 // magenta pixels the model missed AND magenta-tinted edge fringe ("spill").
 // Safe to always run: spongetimes characters use no magenta hues, so any
 // magenta-ish pixel is by definition background that leaked through.
+//
+// Strategy: measure each pixel's "magenta-ness" as min(R, B) - G. Higher value
+// means more magenta. Then:
+//   - magentaness >= 100 → fully transparent (definitely background)
+//   - magentaness 30..100 → fade alpha proportional to how magenta it is,
+//     AND pull R/B toward G to kill the pink tint. Edge pixels get softer
+//     instead of leaving a visible halo.
+//   - magentaness < 30 → leave alone (likely just legitimate character edge)
+//
+// Character palette safety check (cheese mascot, signature colors):
+//   - Yellow cheese, white shirt, red overalls, black shoes, gold trophy,
+//     publisher signature colors (blue/red/orange/purple) — all have
+//     magentaness == 0. Untouched.
 async function scrubMagentaResidue(blob: Blob): Promise<Blob> {
   const url = URL.createObjectURL(blob);
   try {
@@ -44,23 +57,18 @@ async function scrubMagentaResidue(blob: Blob): Promise<Blob> {
       const a = data[i + 3];
       if (a === 0) continue;
 
-      // Step 1: solid magenta residue (R high, B high, G low) → fully transparent.
-      // Cheese mascot's red overalls (high R, low G, low B) are safe — they
-      // don't satisfy the B>=180 condition.
-      if (r >= 180 && b >= 180 && g <= 100) {
+      const magentaness = Math.min(r, b) - g;
+      if (magentaness >= 100) {
+        // Solid magenta residue → fully transparent
         data[i + 3] = 0;
-        continue;
+      } else if (magentaness >= 30) {
+        // Edge spill — fade alpha + neutralize color toward gray
+        const fade = (magentaness - 30) / 70; // 0..1
+        data[i + 3] = Math.round(a * (1 - fade));
+        data[i] = Math.round(r - (r - g) * fade);
+        data[i + 2] = Math.round(b - (b - g) * fade);
       }
-
-      // Step 2: edge fringe / spill — pixel is "magenta-tinted" meaning both
-      // red and blue clearly exceed green. Pull R and B down toward G so the
-      // pink halo around character edges disappears without removing the
-      // pixel entirely (preserves anti-aliasing).
-      if (r > g + 50 && b > g + 50 && r >= 120 && b >= 120) {
-        const cap = g + 20; // allow a tiny residual tint at most
-        if (r > cap) data[i] = cap;
-        if (b > cap) data[i + 2] = cap;
-      }
+      // magentaness < 30 → untouched (clean character pixel)
     }
     ctx.putImageData(imageData, 0, 0);
 
