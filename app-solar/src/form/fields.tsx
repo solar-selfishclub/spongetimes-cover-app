@@ -11,6 +11,67 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Post-process the AI-cutout result to scrub residual magenta — both fully
+// magenta pixels the model missed AND magenta-tinted edge fringe ("spill").
+// Safe to always run: spongetimes characters use no magenta hues, so any
+// magenta-ish pixel is by definition background that leaked through.
+async function scrubMagentaResidue(blob: Blob): Promise<Blob> {
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = await loadImage(url);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return blob;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+      if (a === 0) continue;
+
+      // Step 1: solid magenta residue (R high, B high, G low) → fully transparent.
+      // Cheese mascot's red overalls (high R, low G, low B) are safe — they
+      // don't satisfy the B>=180 condition.
+      if (r >= 180 && b >= 180 && g <= 100) {
+        data[i + 3] = 0;
+        continue;
+      }
+
+      // Step 2: edge fringe / spill — pixel is "magenta-tinted" meaning both
+      // red and blue clearly exceed green. Pull R and B down toward G so the
+      // pink halo around character edges disappears without removing the
+      // pixel entirely (preserves anti-aliasing).
+      if (r > g + 50 && b > g + 50 && r >= 120 && b >= 120) {
+        const cap = g + 20; // allow a tiny residual tint at most
+        if (r > cap) data[i] = cap;
+        if (b > cap) data[i + 2] = cap;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    return await new Promise<Blob>((resolve) =>
+      canvas.toBlob((out) => resolve(out ?? blob), 'image/png')
+    );
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 export function TextField({
   label,
   value,
@@ -199,7 +260,8 @@ export function ImageField({
     setStatus('processing');
     try {
       const cleaned = await removeBackground(file);
-      const dataUrl = await blobToDataUrl(cleaned);
+      const scrubbed = await scrubMagentaResidue(cleaned);
+      const dataUrl = await blobToDataUrl(scrubbed);
       onChange(dataUrl);
       setStatus('idle');
     } catch (err) {
@@ -223,7 +285,8 @@ export function ImageField({
       try {
         const blob = await fetch(source).then((r) => r.blob());
         const cleaned = await removeBackground(blob);
-        const cleanedUrl = await blobToDataUrl(cleaned);
+        const scrubbed = await scrubMagentaResidue(cleaned);
+        const cleanedUrl = await blobToDataUrl(scrubbed);
         onChange(cleanedUrl);
         setStatus('idle');
       } catch (err) {
