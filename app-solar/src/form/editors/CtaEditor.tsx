@@ -1,9 +1,120 @@
-import { SpotlightDraft } from '../../state/useSpotlightDraft';
-import { TextField, ImageField, RangeField, SelectField } from '../fields';
-import { CTA_LABEL_POOL, CTA_MESSAGE_FONTS, SPOTLIGHT_QUESTION_POOL } from '../../tokens';
+import { ReactNode } from 'react';
+import { DEFAULT_DRAFT, SpotlightDraft } from '../../state/useSpotlightDraft';
+import { TextField, ImageField, RangeField } from '../fields';
+import { CTA_LABEL_POOL, SPOTLIGHT_QUESTION_POOL } from '../../tokens';
+import { CharacterPromptCopy } from '../../character/CharacterPromptCopy';
 import { HighlighterControls } from './HighlighterControls';
 
 const CUSTOM_SENTINEL = '__custom__';
+
+// Top-level section header inside the editor sidebar, matching CoverEditor's
+// pattern (clear bold title, optional reset button on the right, thin top
+// border between sections).
+function Section({
+  title,
+  onReset,
+  first,
+  dense,
+  children
+}: {
+  title: string;
+  onReset?: () => void;
+  first?: boolean;
+  dense?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        marginTop: first ? 0 : 20,
+        paddingTop: first ? 0 : 16,
+        borderTop: first ? 'none' : '1px solid rgba(0, 0, 0, 0.10)'
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12
+        }}
+      >
+        <h3
+          style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            margin: 0,
+            letterSpacing: '-0.01em'
+          }}
+        >
+          {title}
+        </h3>
+        {onReset && (
+          <button
+            type="button"
+            onClick={onReset}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(0,0,0,0.15)',
+              borderRadius: 6,
+              padding: '4px 10px',
+              fontSize: 12,
+              color: 'var(--muted-mid)',
+              cursor: 'pointer'
+            }}
+          >
+            기본값으로 되돌리기
+          </button>
+        )}
+      </div>
+      <div className={dense ? 'section-dense' : undefined}>{children}</div>
+    </div>
+  );
+}
+
+function SubGroup({ label, onReset }: { label: string; onReset?: () => void }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 16,
+        marginBottom: 12
+      }}
+    >
+      <h3
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          margin: 0,
+          letterSpacing: '-0.01em'
+        }}
+      >
+        {label}
+      </h3>
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(0,0,0,0.15)',
+            borderRadius: 6,
+            padding: '4px 10px',
+            fontSize: 12,
+            color: 'var(--muted-mid)',
+            cursor: 'pointer'
+          }}
+        >
+          기본값으로 되돌리기
+        </button>
+      )}
+    </div>
+  );
+}
 
 function LabelPicker({
   value,
@@ -17,8 +128,6 @@ function LabelPicker({
 
   function handleSelect(v: string) {
     if (v === CUSTOM_SENTINEL) {
-      // Switching to custom — keep whatever is already there if it's already custom,
-      // otherwise start blank so the user knows the input is theirs to fill.
       if (isPool) onChange('');
     } else {
       onChange(v);
@@ -54,221 +163,194 @@ type Props = {
 };
 
 export function CtaEditor({ draft, update }: Props) {
+  function resetMessageStyle() {
+    update('ctaCharacterMessageFontSize', DEFAULT_DRAFT.ctaCharacterMessageFontSize);
+    update('ctaCharacterMessageLineHeight', DEFAULT_DRAFT.ctaCharacterMessageLineHeight);
+  }
+  function resetLayout() {
+    update('ctaCharacterRowOffsetY', DEFAULT_DRAFT.ctaCharacterRowOffsetY);
+    update('ctaFollowOffsetY', DEFAULT_DRAFT.ctaFollowOffsetY);
+  }
+  function resetCharacterPlacement() {
+    update('ctaCharacterSize', DEFAULT_DRAFT.ctaCharacterSize);
+  }
+
   return (
     <div className="form-section">
       <h2>CTA 편집</h2>
-      <LabelPicker
-        value={draft.ctaLabel}
-        onChange={(v) => update('ctaLabel', v)}
-      />
-      <div className="field">
-        <label>질문 추천 풀</label>
-        <select
-          value=""
-          onChange={(e) => {
-            if (e.target.value) update('ctaQuestion', e.target.value);
-          }}
-        >
-          <option value="">— 추천 질문 선택 (자동 채움) —</option>
-          {SPOTLIGHT_QUESTION_POOL.map((q) => (
-            <option key={q} value={q}>
-              {q}
-            </option>
-          ))}
-        </select>
-      </div>
-      <TextField
-        label="질문 텍스트"
-        value={draft.ctaQuestion}
-        onChange={(v) => update('ctaQuestion', v)}
-        multiline
-        rows={3}
-      />
-      <TextField
-        label="질문 형광펜 단어"
-        value={draft.ctaQuestionHighlight}
-        onChange={(v) => update('ctaQuestionHighlight', v)}
-      />
-      <HighlighterControls
-        value={draft.ctaHighlighter}
-        onChange={(next) => update('ctaHighlighter', next)}
-      />
-      <TextField
-        label="발행자 자유 멘트 (캐릭터 옆)"
-        value={draft.ctaCharacterMessage}
-        onChange={(v) => update('ctaCharacterMessage', v)}
-        multiline
-        rows={3}
-        helper="2~3줄. 캐릭터/발행자 개성 살리기"
-      />
-      <SelectField
-        label="멘트 폰트"
-        value={draft.ctaMessageFontFamily}
-        options={CTA_MESSAGE_FONTS}
-        onChange={(v) => update('ctaMessageFontFamily', v)}
-      />
-      <div className="field-row">
+
+      <Section title="라벨 & 질문" first>
+        <LabelPicker
+          value={draft.ctaLabel}
+          onChange={(v) => update('ctaLabel', v)}
+        />
+        <div className="field">
+          <label>질문 추천 풀</label>
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) update('ctaQuestion', e.target.value);
+            }}
+          >
+            <option value="">— 추천 질문 선택 (자동 채움) —</option>
+            {SPOTLIGHT_QUESTION_POOL.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </select>
+        </div>
+        <TextField
+          label="질문 텍스트"
+          value={draft.ctaQuestion}
+          onChange={(v) => update('ctaQuestion', v)}
+          multiline
+          rows={3}
+        />
+      </Section>
+
+      <Section title="형광펜">
+        <TextField
+          label="질문 형광펜 단어"
+          value={draft.ctaQuestionHighlight}
+          onChange={(v) => update('ctaQuestionHighlight', v)}
+          helper="질문 텍스트에서 강조할 단어/구절 (쉼표 구분, 최대 2개)"
+        />
+        <HighlighterControls
+          value={draft.ctaHighlighter}
+          onChange={(next) => update('ctaHighlighter', next)}
+        />
+      </Section>
+
+      <Section title="발행자 멘트" onReset={resetMessageStyle} dense>
+        <TextField
+          label="자유 멘트 (캐릭터 옆 말풍선)"
+          value={draft.ctaCharacterMessage}
+          onChange={(v) => update('ctaCharacterMessage', v)}
+          multiline
+          rows={3}
+          helper={'4줄 이하 권장. 강조할 부분은 `**단어**`로 감싸면 굵게 표시됩니다\n(예: 스폰지타임즈 **`솔라`**입니다).'}
+        />
         <RangeField
           label="멘트 글자 크기"
-          value={draft.ctaMessageFontSize}
-          min={20}
-          max={96}
+          value={draft.ctaCharacterMessageFontSize}
+          min={18}
+          max={40}
+          step={1}
           unit="px"
-          onChange={(v) => update('ctaMessageFontSize', v)}
-        />
-        <RangeField
-          label="멘트 굵기"
-          value={draft.ctaMessageFontWeight}
-          min={100}
-          max={900}
-          step={100}
-          onChange={(v) => update('ctaMessageFontWeight', v)}
-        />
-      </div>
-      <div className="field-row">
-        <RangeField
-          label="멘트 자간"
-          value={draft.ctaMessageLetterSpacing}
-          min={-0.1}
-          max={0.2}
-          step={0.005}
-          unit="em"
-          onChange={(v) => update('ctaMessageLetterSpacing', v)}
+          onChange={(v) => update('ctaCharacterMessageFontSize', v)}
         />
         <RangeField
           label="멘트 줄간격"
-          value={draft.ctaMessageLineHeight}
+          value={draft.ctaCharacterMessageLineHeight}
           min={1}
-          max={2.5}
+          max={2.2}
           step={0.05}
-          onChange={(v) => update('ctaMessageLineHeight', v)}
+          unit="x"
+          onChange={(v) => update('ctaCharacterMessageLineHeight', v)}
         />
-      </div>
-      <ImageField
-        label="CTA 캐릭터 이미지"
-        value={draft.ctaCharacterImage}
-        onChange={(v) => update('ctaCharacterImage', v)}
-      />
-      <RangeField
-        label="캐릭터 크기"
-        value={draft.ctaCharacterSize}
-        min={15}
-        max={70}
-        unit="%"
-        onChange={(v) => update('ctaCharacterSize', v)}
-      />
+      </Section>
 
-      <div className="field-row">
-        <RangeField
-          label="캐릭터 X 이동"
-          value={draft.ctaCharacterOffsetX}
-          min={-900}
-          max={900}
-          step={5}
-          unit="px"
-          onChange={(v) => update('ctaCharacterOffsetX', v)}
+      <Section title="캐릭터">
+        <ImageField
+          label="CTA 캐릭터 이미지"
+          value={draft.ctaCharacterImage}
+          onChange={(v) => update('ctaCharacterImage', v)}
+          helper="투명 배경 PNG 권장"
         />
+        <SubGroup label="캐릭터 크기" onReset={resetCharacterPlacement} />
+        <div className="section-dense">
+          <RangeField
+            label="캐릭터 크기"
+            value={draft.ctaCharacterSize}
+            min={20}
+            max={60}
+            step={1}
+            unit="%"
+            onChange={(v) => update('ctaCharacterSize', v)}
+          />
+        </div>
+        <CharacterPromptCopy
+          publisher={draft.publisher}
+          contentType={draft.contentType}
+          slideType="cta"
+          title="CTA 캐릭터 프롬프트"
+        />
+      </Section>
+
+      <Section title="레이아웃" onReset={resetLayout} dense>
         <RangeField
-          label="캐릭터 Y 이동"
-          value={draft.ctaCharacterOffsetY}
+          label="캐릭터+말풍선 세로 위치 (Y)"
+          value={draft.ctaCharacterRowOffsetY}
           min={-300}
           max={300}
-          step={5}
+          step={2}
           unit="px"
-          onChange={(v) => update('ctaCharacterOffsetY', v)}
-        />
-      </div>
-      <div className="field-row">
-        <RangeField
-          label="멘트 X 이동"
-          value={draft.ctaMessageOffsetX}
-          min={-900}
-          max={900}
-          step={5}
-          unit="px"
-          onChange={(v) => update('ctaMessageOffsetX', v)}
+          onChange={(v) => update('ctaCharacterRowOffsetY', v)}
         />
         <RangeField
-          label="멘트 Y 이동"
-          value={draft.ctaMessageOffsetY}
+          label="팔로우 카드 세로 위치 (Y)"
+          value={draft.ctaFollowOffsetY}
           min={-300}
           max={300}
-          step={5}
+          step={2}
           unit="px"
-          onChange={(v) => update('ctaMessageOffsetY', v)}
+          onChange={(v) => update('ctaFollowOffsetY', v)}
         />
-      </div>
-      <RangeField
-        label="팔로우 카드 Y 이동"
-        value={draft.ctaFollowOffsetY}
-        min={-100}
-        max={300}
-        step={5}
-        unit="px"
-        onChange={(v) => update('ctaFollowOffsetY', v)}
-      />
+      </Section>
 
-      <div
-        style={{
-          marginTop: 16,
-          marginBottom: 12,
-          padding: '12px 14px',
-          background: '#FFFEF4',
-          border: '1px solid #E5E1D0',
-          borderRadius: 8
-        }}
-      >
+      <Section title="팔로우 카드">
+        <div className="helper" style={{ marginBottom: 12 }}>
+          스폰지클럽 카드는 기본 로고가 적용돼요. 변경은 코드 수정 필요.
+        </div>
+        <SubGroup label="보조 팔로우 카드 (개인 계정)" />
         <label
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            cursor: 'pointer',
+            justifyContent: 'space-between',
+            gap: 8,
+            marginTop: 6,
+            padding: '8px 12px',
+            borderRadius: 8,
+            background: 'rgba(0, 0, 0, 0.03)',
+            border: '1px solid rgba(0, 0, 0, 0.06)',
             fontSize: 13,
-            fontWeight: 600,
-            color: 'var(--text-primary)'
+            color: '#555',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
           }}
         >
+          <span>보조 팔로우 카드 표시</span>
           <input
             type="checkbox"
             checked={draft.ctaSecondaryFollowEnabled}
             onChange={(e) => update('ctaSecondaryFollowEnabled', e.target.checked)}
-            style={{ width: 16, height: 16, margin: 0, flexShrink: 0 }}
           />
-          <span>개인 팔로우 카드 추가</span>
         </label>
-        <div
-          className="helper"
-          style={{ marginTop: 6, marginLeft: 26 }}
-        >
-          @spongeclub.ai 아래에 발행자 개인 계정 카드를 하나 더 표시
-        </div>
-      </div>
-      {draft.ctaSecondaryFollowEnabled && (
-        <>
-          <TextField
-            label="개인 계정 표시명"
-            value={draft.ctaSecondaryFollowName}
-            onChange={(v) => update('ctaSecondaryFollowName', v)}
-            placeholder="예: KENO (스폰지타임즈)"
-            helper="카드 윗줄에 굵게 표시됨"
-          />
-          <TextField
-            label="개인 계정 @핸들"
-            value={draft.ctaSecondaryFollowHandle}
-            onChange={(v) => update('ctaSecondaryFollowHandle', v)}
-            placeholder="@amuse__ai"
-            helper="@를 포함해서 입력. 비워두면 카드가 숨겨짐"
-          />
-          <ImageField
-            label="개인 계정 프로필 이미지"
-            value={draft.ctaSecondaryFollowImage}
-            onChange={(v) => update('ctaSecondaryFollowImage', v)}
-            helper="정사각형 권장. 비워두면 👤 아이콘이 들어감"
-          />
-        </>
-      )}
-
+        {draft.ctaSecondaryFollowEnabled && (
+          <>
+            <TextField
+              label="이름"
+              value={draft.ctaSecondaryFollowName}
+              onChange={(v) => update('ctaSecondaryFollowName', v)}
+              placeholder="예: 솔라"
+            />
+            <TextField
+              label="핸들"
+              value={draft.ctaSecondaryFollowHandle}
+              onChange={(v) => update('ctaSecondaryFollowHandle', v)}
+              placeholder="예: @solar.handle"
+            />
+            <ImageField
+              label="프로필 이미지"
+              value={draft.ctaSecondaryFollowImage}
+              onChange={(v) => update('ctaSecondaryFollowImage', v)}
+              disableCutout
+            />
+          </>
+        )}
+      </Section>
     </div>
   );
 }

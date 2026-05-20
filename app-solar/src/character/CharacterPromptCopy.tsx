@@ -53,8 +53,18 @@ export function CharacterPromptCopy({ publisher, contentType, slideType, title }
   const isCustomActive = appliedPose.length > 0;
 
   return (
-    <div className="field">
-      <label>{title}</label>
+    <div className="field" style={{ marginTop: 16 }}>
+      <label
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.01em',
+          marginBottom: 12
+        }}
+      >
+        {title}
+      </label>
       <div className="helper" style={{ marginBottom: 8 }}>
         📎 AI 도구에서 이 프롬프트와 함께 <b>{publisher}의 9포즈 액션 시트</b>를 같이 첨부해 주세요. AI가 시트에서 상황에 맞는 포즈를 골라 다시 렌더링합니다.
       </div>

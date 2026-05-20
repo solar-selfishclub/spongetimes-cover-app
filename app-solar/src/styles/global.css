@@ -346,15 +346,23 @@ input, textarea, select {
 }
 
 /* Tighter vertical rhythm inside the highlighter color tweak box */
-.highlighter-controls .field {
+.highlighter-controls .field,
+.section-dense .field {
   margin-bottom: 4px;
 }
-.highlighter-controls .field label {
-  margin-bottom: 0;
+.highlighter-controls .field label,
+.section-dense .field label {
+  margin-bottom: 2px;
 }
-.highlighter-controls .field input[type='range'] {
+.highlighter-controls .field input[type='range'],
+.section-dense .field input[type='range'] {
   margin: 0;
   padding: 0;
+}
+/* In dense rows that mix a taller select with a slider, drop the slider so
+   it sits roughly centered with the select box instead of clinging to top. */
+.section-dense .field-row:has(select) input[type='range'] {
+  margin-top: 6px;
 }
 
 /* Highlight (orange marker) */
@@ -414,6 +422,20 @@ input, textarea, select {
   font-size: 32px;
   overflow: hidden;
 }
+.follow-card__icon--round {
+  border-radius: 50%;
+}
+
+/* Vertical bounce used by the CTA pre-follow chevrons */
+@keyframes nudge-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+.cta-prelude-arrow {
+  display: inline-block;
+  animation: nudge-down 1.2s ease-in-out infinite;
+  will-change: transform;
+}
 
 .follow-card__text {
   flex: 1;
@@ -446,6 +468,21 @@ input, textarea, select {
   font-weight: 700;
   padding: 9px 22px;
   border-radius: var(--radius-pill);
+  /* Soft pulse — gentle scale + yellow glow halo, loops forever */
+  animation: follow-pulse 1.8s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+@keyframes follow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 230, 122, 0);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 28px 6px rgba(255, 230, 122, 0.55);
+  }
 }
 
 /* Form group titles */
@@ -454,6 +491,7 @@ input, textarea, select {
   color: var(--muted-mid);
   margin-top: 4px;
   line-height: 1.4;
+  white-space: pre-line;
 }
 
 .prompt-block {

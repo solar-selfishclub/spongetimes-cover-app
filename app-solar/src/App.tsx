@@ -5,8 +5,9 @@ import { CoverEditor } from './form/editors/CoverEditor';
 import { CtaEditor } from './form/editors/CtaEditor';
 import { CoverSlide } from './slides/CoverSlide';
 import { CtaSlide } from './slides/CtaSlide';
-import { downloadSlide } from './export/slideToPng';
+import { downloadSlide, slideToDataUrl } from './export/slideToPng';
 import { downloadAllAsZip } from './export/downloadAll';
+import { downloadCtaAsVideo } from './export/slideToVideo';
 import { buildSlideOrder } from './slideOrder';
 
 const ACTIVE_SCALE = 0.55; // 1080 * 0.55 = 594, 1350 * 0.55 = 742.5
@@ -85,6 +86,92 @@ export default function App() {
     }
   }
 
+  // CTA → MP4: snapshot the slide with the animated parts (follow button +
+  // chevrons) hidden, then drive those parts in a canvas overlay so the export
+  // can record real animation. The on-screen preview is restored before
+  // recording starts so the editor keeps animating during export.
+  async function captureCurrentAsVideo() {
+    const idx = currentIdx;
+    const entry = order[idx];
+    if (entry.kind !== 'cta') return;
+    const node = slideRefs.current[idx]?.current;
+    if (!node) return;
+    const btn = node.querySelector('.follow-card__button') as HTMLElement | null;
+    if (!btn) {
+      alert('팔로우 버튼을 찾지 못했어요.');
+      return;
+    }
+    const arrows = Array.from(
+      node.querySelectorAll<HTMLElement>('.cta-prelude-arrow')
+    ).slice(0, 2);
+
+    // Freeze every animating element so bbox reads reflect the rest state.
+    const prevBtnVisibility = btn.style.visibility;
+    const prevBtnAnimation = btn.style.animation;
+    btn.style.animation = 'none';
+    const prevArrowState = arrows.map((a) => ({
+      visibility: a.style.visibility,
+      animation: a.style.animation
+    }));
+    arrows.forEach((a) => {
+      a.style.animation = 'none';
+    });
+    void btn.offsetWidth; // force layout flush
+
+    const slideRect = node.getBoundingClientRect();
+    const btnBox = btn.getBoundingClientRect();
+    // Convert from display-pixel coords to 1080×1350 slide-local coords
+    const scaleX = 1080 / slideRect.width;
+    const scaleY = 1350 / slideRect.height;
+    const buttonRect = {
+      x: (btnBox.left - slideRect.left) * scaleX,
+      y: (btnBox.top - slideRect.top) * scaleY,
+      w: btnBox.width * scaleX,
+      h: btnBox.height * scaleY
+    };
+    const arrowRects = arrows.map((a) => {
+      const r = a.getBoundingClientRect();
+      const inner = a.firstElementChild as HTMLElement | null;
+      const fontPx = parseFloat(getComputedStyle(inner ?? a).fontSize) || 28;
+      return {
+        cx: (r.left - slideRect.left + r.width / 2) * scaleX,
+        cy: (r.top - slideRect.top + r.height / 2) * scaleY,
+        fontSize: fontPx * scaleX
+      };
+    });
+
+    btn.style.visibility = 'hidden';
+    arrows.forEach((a) => {
+      a.style.visibility = 'hidden';
+    });
+    setExporting(true);
+    const restore = () => {
+      btn.style.visibility = prevBtnVisibility;
+      btn.style.animation = prevBtnAnimation;
+      arrows.forEach((a, i) => {
+        a.style.visibility = prevArrowState[i].visibility;
+        a.style.animation = prevArrowState[i].animation;
+      });
+    };
+    try {
+      const dataUrl = await slideToDataUrl(node);
+      const chromeImage = await new Promise<HTMLImageElement>((res, rej) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = rej;
+        im.src = dataUrl;
+      });
+      restore();
+      const filename = `slide-${String(idx + 1).padStart(2, '0')}-cta`;
+      await downloadCtaAsVideo(filename, { chromeImage, buttonRect, arrowRects });
+    } catch (e) {
+      restore();
+      alert((e as Error).message ?? '비디오 생성에 실패했습니다.');
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function renderSlide(idx: number) {
     const entry = order[idx];
     switch (entry.kind) {
@@ -114,15 +201,9 @@ export default function App() {
             characterMessage={draft.ctaCharacterMessage}
             characterImage={draft.ctaCharacterImage}
             characterSize={draft.ctaCharacterSize}
-            messageFontFamily={draft.ctaMessageFontFamily}
-            messageFontSize={draft.ctaMessageFontSize}
-            messageFontWeight={draft.ctaMessageFontWeight}
-            messageLetterSpacing={draft.ctaMessageLetterSpacing}
-            messageLineHeight={draft.ctaMessageLineHeight}
-            characterOffsetX={draft.ctaCharacterOffsetX}
-            characterOffsetY={draft.ctaCharacterOffsetY}
-            messageOffsetX={draft.ctaMessageOffsetX}
-            messageOffsetY={draft.ctaMessageOffsetY}
+            characterMessageFontSize={draft.ctaCharacterMessageFontSize}
+            characterMessageLineHeight={draft.ctaCharacterMessageLineHeight}
+            characterRowOffsetY={draft.ctaCharacterRowOffsetY}
             followOffsetY={draft.ctaFollowOffsetY}
             secondaryFollow={
               draft.ctaSecondaryFollowEnabled && draft.ctaSecondaryFollowHandle.trim()
@@ -257,6 +338,17 @@ export default function App() {
             >
               PNG 다운로드
             </button>
+            {order[currentIdx]?.kind === 'cta' && (
+              <button
+                type="button"
+                className="btn"
+                onClick={captureCurrentAsVideo}
+                disabled={exporting}
+                style={{ marginLeft: 8 }}
+              >
+                {exporting ? '내보내는 중…' : 'MP4 다운로드'}
+              </button>
+            )}
           </div>
 
           {/* Page dots */}

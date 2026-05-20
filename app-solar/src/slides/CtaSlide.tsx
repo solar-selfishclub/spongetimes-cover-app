@@ -1,9 +1,26 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Slide } from './Slide';
 import { PillLabel } from './parts/PillLabel';
 import { Highlight } from './parts/Highlight';
 import { FollowCard } from './parts/FollowCard';
+import { SpeechBubble } from './parts/SpeechBubble';
 import { COLORS } from '../tokens';
+
+// Parse `**word**` markers into <strong> nodes. Plain text outside the markers
+// is left untouched so whitespace (newlines, spaces) keeps `white-space: pre-wrap`
+// behavior inside the speech bubble.
+function parseBoldText(text: string): ReactNode {
+  const parts = text.split(/\*\*([^*]+?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} style={{ fontWeight: 700 }}>
+        {part}
+      </strong>
+    ) : (
+      part
+    )
+  );
+}
 
 export type CtaSlideProps = {
   labelText: string;
@@ -11,18 +28,17 @@ export type CtaSlideProps = {
   questionHighlightWords?: string[];
   characterMessage: string;
   characterImage?: string | null;
-  characterSize?: number; // percent of row width
-  messageFontFamily?: string;
-  messageFontSize?: number;
-  messageFontWeight?: number;
-  messageLetterSpacing?: number; // em
-  messageLineHeight?: number;
-  characterOffsetX?: number;
-  characterOffsetY?: number;
-  messageOffsetX?: number;
-  messageOffsetY?: number;
-  followOffsetY?: number;
-  secondaryFollow?: { name: string; handle: string; imageUrl: string | null } | null;
+  characterSize?: number; // % of row width (20–60), default 32
+  characterMessageFontSize?: number; // px, default 30
+  characterMessageLineHeight?: number; // default 1.45
+  characterRowOffsetY?: number; // px, shifts character+bubble row vertically
+  followOffsetY?: number;       // px, shifts the follow card vertically
+  // Optional secondary follow card (e.g. personal account)
+  secondaryFollow?: {
+    name: string;
+    handle: string;
+    imageUrl: string | null;
+  } | null;
 };
 
 export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSlide(
@@ -33,17 +49,11 @@ export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSl
     characterMessage,
     characterImage,
     characterSize = 32,
-    messageFontFamily = 'Pretendard',
-    messageFontSize = 48,
-    messageFontWeight = 800,
-    messageLetterSpacing = -0.03,
-    messageLineHeight = 1.3,
-    characterOffsetX = 0,
-    characterOffsetY = 0,
-    messageOffsetX = 0,
-    messageOffsetY = 0,
+    characterMessageFontSize = 30,
+    characterMessageLineHeight = 1.45,
+    characterRowOffsetY = 0,
     followOffsetY = 0,
-    secondaryFollow
+    secondaryFollow = null
   },
   ref
 ) {
@@ -58,7 +68,7 @@ export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSl
         style={{
           background: COLORS.surface.cardWhite,
           borderRadius: 28,
-          padding: '48px 44px 44px',
+          padding: '68px 44px 64px',
           position: 'relative',
           marginBottom: 32
         }}
@@ -76,11 +86,11 @@ export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSl
             lineHeight: 1
           }}
         >
-          "
+          &ldquo;
         </div>
         <div
           style={{
-            fontSize: 48,
+            fontSize: 54,
             fontWeight: 700,
             lineHeight: 1.3,
             letterSpacing: '-0.015em',
@@ -99,32 +109,28 @@ export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSl
           alignItems: 'center',
           gap: 24,
           marginBottom: 32,
-          padding: '8px 4px 12px'
+          padding: '8px 4px 12px',
+          transform: `translateY(${characterRowOffsetY}px)`
         }}
       >
         <div
           style={{
             width: `${characterSize}%`,
             aspectRatio: '1 / 1',
-            borderRadius: 16,
+            borderRadius: characterImage ? 0 : 16,
             overflow: 'hidden',
-            background: '#FFFDF1',
+            background: characterImage ? 'transparent' : '#FFFDF1',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexShrink: 0,
-            transform: `translate(${characterOffsetX}px, ${characterOffsetY}px)`
+            flexShrink: 0
           }}
         >
           {characterImage ? (
             <img
               src={characterImage}
               alt=""
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain'
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           ) : (
             <span style={{ fontSize: 18, color: COLORS.text.mutedLow }}>캐릭터</span>
@@ -132,27 +138,70 @@ export const CtaSlide = forwardRef<HTMLDivElement, CtaSlideProps>(function CtaSl
         </div>
         <div
           style={{
-            flex: '0 1 auto',
-            alignSelf: 'center',
-            fontFamily: `"${messageFontFamily}", "Pretendard", sans-serif`,
-            fontSize: messageFontSize,
-            lineHeight: messageLineHeight,
-            letterSpacing: `${messageLetterSpacing}em`,
-            fontWeight: messageFontWeight,
-            color: COLORS.text.primary,
-            whiteSpace: 'pre-wrap',
-            transform: `translate(${messageOffsetX}px, ${messageOffsetY}px)`
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 12
           }}
         >
-          {characterMessage}
+          <PillLabel
+            variant="yellow"
+            style={{
+              fontSize: 28,
+              padding: '10px 22px',
+              fontWeight: 700,
+              background: COLORS.surface.cardWhite,
+              color: COLORS.text.primary
+            }}
+          >
+            발행자 한마디 🗯️
+          </PillLabel>
+          <div style={{ alignSelf: 'stretch', transform: 'translateX(-28px)' }}>
+            <SpeechBubble
+              fontSize={characterMessageFontSize}
+              fontWeight={500}
+              lineHeight={characterMessageLineHeight}
+              padding="32px 32px"
+            >
+              {parseBoldText(characterMessage)}
+            </SpeechBubble>
+          </div>
         </div>
       </div>
 
       <div style={{ transform: `translateY(${followOffsetY}px)` }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 16,
+            marginBottom: 32,
+            fontSize: 28,
+            fontWeight: 600,
+            color: COLORS.text.primary,
+            letterSpacing: '-0.01em'
+          }}
+        >
+          <span className="cta-prelude-arrow" style={{ opacity: 0.55 }}>
+            <span style={{ display: 'inline-block', transform: 'rotate(90deg)', fontWeight: 700 }}>
+              ››
+            </span>
+          </span>
+          더 많은 이야기가 궁금하다면?
+          <span className="cta-prelude-arrow" style={{ opacity: 0.55 }}>
+            <span style={{ display: 'inline-block', transform: 'rotate(90deg)', fontWeight: 700 }}>
+              ››
+            </span>
+          </span>
+        </div>
         <FollowCard
-          name="스폰지클럽"
           handle="@spongeclub.ai"
           imageUrl="/spongeclub-icon.png"
+          round
+          fallbackEmoji="📰"
         />
         {secondaryFollow && (
           <div style={{ marginTop: 16 }}>

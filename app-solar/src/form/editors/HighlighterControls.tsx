@@ -21,7 +21,7 @@ export function HighlighterControls({ value, onChange }: Props) {
     <div
       className="highlighter-controls"
       style={{
-        marginTop: 8,
+        marginTop: 16,
         padding: '10px 12px',
         borderRadius: 8,
         background: 'rgba(0, 0, 0, 0.03)',

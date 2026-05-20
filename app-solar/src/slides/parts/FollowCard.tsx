@@ -2,21 +2,33 @@ export function FollowCard({
   name,
   handle = '@spongeclub.ai',
   imageUrl,
-  fallbackEmoji = '📰'
+  fallbackEmoji = '📰',
+  round = false
 }: {
   name?: string;
   handle?: string;
   imageUrl?: string | null;
   fallbackEmoji?: string;
+  // When true, render the icon box as a circle (used for the primary
+  // spongeclub follow card's logo image). Square is the default.
+  round?: boolean;
 }) {
   return (
     <div className="follow-card">
-      <div className="follow-card__icon" aria-hidden>
+      <div
+        className={`follow-card__icon ${round ? 'follow-card__icon--round' : ''}`}
+        aria-hidden
+      >
         {imageUrl ? (
           <img
             src={imageUrl}
             alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: 'inherit'
+            }}
           />
         ) : (
           fallbackEmoji

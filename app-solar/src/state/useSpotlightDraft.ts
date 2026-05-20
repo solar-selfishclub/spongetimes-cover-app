@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ContentType,
-  CtaMessageFont,
   DEFAULT_HIGHLIGHTER_STYLE,
   HighlighterStyle,
   PublisherName
@@ -29,20 +28,13 @@ export type SpotlightDraft = {
   ctaLabel: string;
   ctaQuestion: string;
   ctaQuestionHighlight: string;
-  ctaCharacterMessage: string;
-  ctaMessageFontFamily: CtaMessageFont;
-  ctaMessageFontSize: number; // px
-  ctaMessageFontWeight: number; // 100–900
-  ctaMessageLetterSpacing: number; // em (e.g. -0.03)
-  ctaMessageLineHeight: number; // unitless (e.g. 1.3)
+  ctaCharacterMessage: string; // `**word**` syntax → bold
+  ctaCharacterMessageFontSize: number;   // px, speech bubble text
+  ctaCharacterMessageLineHeight: number; // unitless
   ctaCharacterImage: string | null;
-  ctaCharacterSize: number; // percent of CTA row width (15–70)
-  // Layout offsets (px) — let user nudge each element within the CTA slide
-  ctaCharacterOffsetX: number;
-  ctaCharacterOffsetY: number;
-  ctaMessageOffsetX: number;
-  ctaMessageOffsetY: number;
-  ctaFollowOffsetY: number;
+  ctaCharacterSize: number; // % of CTA row width (20–60)
+  ctaCharacterRowOffsetY: number; // px, shifts character + bubble row vertically
+  ctaFollowOffsetY: number;       // px, shifts the follow card group vertically
   // Optional secondary follow card (개인 계정)
   ctaSecondaryFollowEnabled: boolean;
   ctaSecondaryFollowName: string;
@@ -66,20 +58,14 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   coverCharacterY: 67,
   coverCharacterSize: 64,
   ctaLabel: '💬 댓글로 이야기해요',
-  ctaQuestion: '오늘 소개된 6명 중\n가장 인상 깊었던 분은?\n댓글로 응원 보내주세요 👏',
-  ctaQuestionHighlight: '가장 인상 깊었던 분',
-  ctaCharacterMessage: '다음 회차에서\n또 만나요. 👋',
-  ctaMessageFontFamily: 'Pretendard',
-  ctaMessageFontSize: 48,
-  ctaMessageFontWeight: 800,
-  ctaMessageLetterSpacing: -0.03,
-  ctaMessageLineHeight: 1.3,
+  ctaQuestion: '여기에 자유 텍스트를 입력하세요',
+  ctaQuestionHighlight: '자유 텍스트',
+  ctaCharacterMessage: '여기에 발행자 **자유 멘트**를 입력하세요',
+  ctaCharacterMessageFontSize: 30,
+  ctaCharacterMessageLineHeight: 1.45,
   ctaCharacterImage: null,
   ctaCharacterSize: 32,
-  ctaCharacterOffsetX: 0,
-  ctaCharacterOffsetY: 0,
-  ctaMessageOffsetX: 0,
-  ctaMessageOffsetY: 0,
+  ctaCharacterRowOffsetY: 0,
   ctaFollowOffsetY: 40,
   ctaSecondaryFollowEnabled: false,
   ctaSecondaryFollowName: '',

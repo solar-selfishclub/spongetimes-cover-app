@@ -167,15 +167,19 @@ export function ImageField({
   label,
   value,
   onChange,
-  helper
+  helper,
+  disableCutout = false
 }: {
   label: string;
   value: string | null;
   onChange: (dataUrl: string | null) => void;
   helper?: string;
+  // If true, hide the 누끼 toggle and always upload the raw image.
+  // Used for logos / profile photos where background removal doesn't apply.
+  disableCutout?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [autoRemoveBg, setAutoRemoveBg] = useState(true);
+  const [autoRemoveBg, setAutoRemoveBg] = useState(false);
   const [status, setStatus] = useState<'idle' | 'processing' | 'error'>('idle');
   // Keep the raw original (pre-cutout) so the checkbox can toggle both ways.
   // This is session-local — after a page refresh the persisted value (which may
@@ -191,7 +195,7 @@ export function ImageField({
     const rawDataUrl = await blobToDataUrl(file);
     setOriginalImage(rawDataUrl);
 
-    if (!autoRemoveBg) {
+    if (disableCutout || !autoRemoveBg) {
       onChange(rawDataUrl);
       return;
     }
@@ -255,31 +259,33 @@ export function ImageField({
           <span>클릭해서 이미지 업로드 (PNG/JPG)</span>
         )}
       </div>
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 8,
-          marginTop: 6,
-          padding: '8px 12px',
-          borderRadius: 8,
-          background: 'rgba(0, 0, 0, 0.03)',
-          border: '1px solid rgba(0, 0, 0, 0.06)',
-          fontSize: 13,
-          color: '#555',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap'
-        }}
-      >
-        <span>배경 자동 제거 (누끼)</span>
-        <input
-          type="checkbox"
-          checked={autoRemoveBg}
-          disabled={processing}
-          onChange={(e) => handleToggle(e.target.checked)}
-        />
-      </label>
+      {!disableCutout && (
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            marginTop: 6,
+            padding: '8px 12px',
+            borderRadius: 8,
+            background: 'rgba(0, 0, 0, 0.03)',
+            border: '1px solid rgba(0, 0, 0, 0.06)',
+            fontSize: 13,
+            color: '#555',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <span>배경 자동 제거 (누끼)</span>
+          <input
+            type="checkbox"
+            checked={autoRemoveBg}
+            disabled={processing}
+            onChange={(e) => handleToggle(e.target.checked)}
+          />
+        </label>
+      )}
       {status === 'error' && (
         <div className="helper" style={{ color: '#c0392b' }}>
           배경 제거에 실패해 원본을 사용합니다.
