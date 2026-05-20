@@ -1,20 +1,20 @@
-import { DEFAULT_DRAFT, SpotlightDraft } from '../../state/useSpotlightDraft';
+import { DEFAULT_HIGHLIGHTER_STYLE, HighlighterStyle } from '../../tokens';
 import { RangeField } from '../fields';
 
 type Props = {
-  draft: SpotlightDraft;
-  update: <K extends keyof SpotlightDraft>(key: K, value: SpotlightDraft[K]) => void;
+  value: HighlighterStyle;
+  onChange: (next: HighlighterStyle) => void;
 };
 
 // Highlighter color tweak group: yellow override + opacity/saturation/lightness.
-// State is global per draft, so the same widget is rendered under each editor's
-// highlight-word input — adjustments here flow to all <Highlight> instances.
-export function HighlighterControls({ draft, update }: Props) {
-  function resetHighlighter() {
-    update('highlighterUseYellow', DEFAULT_DRAFT.highlighterUseYellow);
-    update('highlighterOpacity', DEFAULT_DRAFT.highlighterOpacity);
-    update('highlighterSaturation', DEFAULT_DRAFT.highlighterSaturation);
-    update('highlighterLightness', DEFAULT_DRAFT.highlighterLightness);
+// Stateless — operates on whatever HighlighterStyle slot the parent passes in
+// (cover or cta). Same widget is rendered under each editor's highlight-word
+// input, but the values are independent per slide.
+export function HighlighterControls({ value, onChange }: Props) {
+  const patch = (next: Partial<HighlighterStyle>) => onChange({ ...value, ...next });
+
+  function reset() {
+    onChange({ ...DEFAULT_HIGHLIGHTER_STYLE });
   }
 
   return (
@@ -48,7 +48,7 @@ export function HighlighterControls({ draft, update }: Props) {
         </div>
         <button
           type="button"
-          onClick={resetHighlighter}
+          onClick={reset}
           style={{
             background: 'transparent',
             border: '1px solid rgba(0,0,0,0.15)',
@@ -75,8 +75,8 @@ export function HighlighterControls({ draft, update }: Props) {
       >
         <input
           type="checkbox"
-          checked={draft.highlighterUseYellow}
-          onChange={(e) => update('highlighterUseYellow', e.target.checked)}
+          checked={value.useYellow}
+          onChange={(e) => patch({ useYellow: e.target.checked })}
         />
         <span>기본 노란색 사용</span>
         <span style={{ fontSize: 12, color: 'var(--muted-mid)' }}>
@@ -86,8 +86,8 @@ export function HighlighterControls({ draft, update }: Props) {
 
       <RangeField
         label="불투명도"
-        value={draft.highlighterOpacity}
-        onChange={(v) => update('highlighterOpacity', v)}
+        value={value.opacity}
+        onChange={(v) => patch({ opacity: v })}
         min={0}
         max={100}
         step={1}
@@ -95,8 +95,8 @@ export function HighlighterControls({ draft, update }: Props) {
       />
       <RangeField
         label="채도"
-        value={draft.highlighterSaturation}
-        onChange={(v) => update('highlighterSaturation', v)}
+        value={value.saturation}
+        onChange={(v) => patch({ saturation: v })}
         min={0}
         max={200}
         step={1}
@@ -104,8 +104,8 @@ export function HighlighterControls({ draft, update }: Props) {
       />
       <RangeField
         label="명도"
-        value={draft.highlighterLightness}
-        onChange={(v) => update('highlighterLightness', v)}
+        value={value.lightness}
+        onChange={(v) => patch({ lightness: v })}
         min={0}
         max={200}
         step={1}

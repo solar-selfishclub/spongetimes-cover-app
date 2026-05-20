@@ -89,7 +89,10 @@ export function CtaEditor({ draft, update }: Props) {
         value={draft.ctaQuestionHighlight}
         onChange={(v) => update('ctaQuestionHighlight', v)}
       />
-      <HighlighterControls draft={draft} update={update} />
+      <HighlighterControls
+        value={draft.ctaHighlighter}
+        onChange={(next) => update('ctaHighlighter', next)}
+      />
       <TextField
         label="발행자 자유 멘트 (캐릭터 옆)"
         value={draft.ctaCharacterMessage}

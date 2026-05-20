@@ -105,6 +105,22 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 // Classic highlighter yellow — used when user opts out of publisher signature.
 export const HIGHLIGHTER_YELLOW = '#FFEB3B';
 
+// Per-slide highlighter tweak. Each slide (cover, cta) owns its own copy so
+// dialing the cover's highlight doesn't change the CTA's, and vice versa.
+export type HighlighterStyle = {
+  useYellow: boolean;
+  opacity: number;    // 0–100, percent (alpha)
+  saturation: number; // 0–200, percent (100 = base)
+  lightness: number;  // 0–200, percent (100 = base)
+};
+
+export const DEFAULT_HIGHLIGHTER_STYLE: HighlighterStyle = {
+  useYellow: false,
+  opacity: 55,
+  saturation: 100,
+  lightness: 100
+};
+
 // Highlighter colors derived from each publisher's signature hex (or yellow override).
 // User adjusts opacity / saturation / lightness on top of the chosen base color.
 //   - opacity:    0–100 (percent)             — main fill alpha
@@ -115,7 +131,7 @@ export const HIGHLIGHTER_YELLOW = '#FFEB3B';
 // keeps the lighter wash even when the main bar is dialed up.
 export function highlighterColors(
   publisher: PublisherName,
-  opts: { opacity: number; saturation: number; lightness: number; useYellow: boolean }
+  opts: HighlighterStyle
 ): { main: string; subtle: string } {
   const baseHex = opts.useYellow ? HIGHLIGHTER_YELLOW : PUBLISHERS[publisher].hex;
   const hsl = hexToHsl(baseHex);

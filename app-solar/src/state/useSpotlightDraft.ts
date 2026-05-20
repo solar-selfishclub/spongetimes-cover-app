@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
-import { ContentType, CtaMessageFont, PublisherName } from '../tokens';
+import {
+  ContentType,
+  CtaMessageFont,
+  DEFAULT_HIGHLIGHTER_STYLE,
+  HighlighterStyle,
+  PublisherName
+} from '../tokens';
 
 export type SpotlightDraft = {
   publisher: PublisherName;
   week: number;
   contentType: ContentType;
-  // Highlighter color tweaks (applied on top of publisher's signature hex)
-  highlighterUseYellow: boolean; // override publisher color with classic yellow
-  highlighterOpacity: number;    // 0–100, percent (alpha)
-  highlighterSaturation: number; // 0–200, percent (100 = base hue saturation)
-  highlighterLightness: number;  // 0–200, percent (100 = base hue lightness)
+  // Per-slide highlighter color tweaks. Cover and CTA each own their own
+  // copy so changes on one slide don't leak into the other.
+  coverHighlighter: HighlighterStyle;
+  ctaHighlighter: HighlighterStyle;
   // Cover
   mainTitle: string;
   mainTitleSize: number; // px
@@ -49,10 +54,8 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   publisher: '키노',
   week: 1,
   contentType: '콘텐츠 유형을 입력하세요',
-  highlighterUseYellow: false,
-  highlighterOpacity: 55,
-  highlighterSaturation: 100,
-  highlighterLightness: 100,
+  coverHighlighter: { ...DEFAULT_HIGHLIGHTER_STYLE },
+  ctaHighlighter: { ...DEFAULT_HIGHLIGHTER_STYLE },
   mainTitle: '콘텐츠 제목을\n입력하세요',
   mainTitleSize: 130,
   mainTitleAlign: 'left',

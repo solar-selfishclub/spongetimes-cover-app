@@ -100,7 +100,10 @@ export function CoverEditor({ draft, update }: Props) {
         onChange={(v) => update('mainTitleHighlight', v)}
         helper="메인 타이틀 안에서 정확히 일치하는 단어/구절만 강조됨"
       />
-      <HighlighterControls draft={draft} update={update} />
+      <HighlighterControls
+        value={draft.coverHighlighter}
+        onChange={(next) => update('coverHighlighter', next)}
+      />
       <hr className="editor-divider" />
       <ImageField
         label="표지 캐릭터 이미지"

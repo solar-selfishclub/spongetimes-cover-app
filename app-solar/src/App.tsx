@@ -43,27 +43,18 @@ export default function App() {
     [draft.ctaQuestionHighlight]
   );
 
-  // Publisher-signature highlighter color — flows through CSS vars down to
-  // every <Highlight> rendered inside the app (visible + offscreen capture).
-  // Opacity/saturation/lightness tweaks let the user dial the look per draft.
-  const highlighterStyle = useMemo<CSSProperties>(() => {
-    const hl = highlighterColors(draft.publisher, {
-      opacity: draft.highlighterOpacity,
-      saturation: draft.highlighterSaturation,
-      lightness: draft.highlighterLightness,
-      useYellow: draft.highlighterUseYellow
-    });
+  // Per-slide highlighter CSS vars. Cover and CTA each carry their own
+  // HighlighterStyle so we compute --highlighter / --highlighter-subtle once
+  // per slide kind and attach them to that slide's wrapper div. This way
+  // changing the cover's highlight doesn't bleed into the CTA preview.
+  function highlighterStyleForKind(kind: 'cover' | 'cta'): CSSProperties {
+    const style = kind === 'cover' ? draft.coverHighlighter : draft.ctaHighlighter;
+    const hl = highlighterColors(draft.publisher, style);
     return {
       ['--highlighter' as never]: hl.main,
       ['--highlighter-subtle' as never]: hl.subtle
     };
-  }, [
-    draft.publisher,
-    draft.highlighterOpacity,
-    draft.highlighterSaturation,
-    draft.highlighterLightness,
-    draft.highlighterUseYellow
-  ]);
+  }
 
   function suffixForIdx(idx: number): string {
     return order[idx].kind;
@@ -162,7 +153,7 @@ export default function App() {
   const goNext = () => setCurrentIdx((i) => Math.min(total - 1, i + 1));
 
   return (
-    <div className="app-shell-v2" style={highlighterStyle}>
+    <div className="app-shell-v2">
       {/* TOP BAR */}
       <header className="topbar">
         <div className="topbar-title">
@@ -248,7 +239,8 @@ export default function App() {
                   transform: `scale(${ACTIVE_SCALE})`,
                   transformOrigin: 'top left',
                   width: 1080,
-                  height: 1350
+                  height: 1350,
+                  ...highlighterStyleForKind(order[currentIdx].kind)
                 }}
               >
                 {renderSlide(currentIdx)}
@@ -313,7 +305,8 @@ export default function App() {
               // but we keep this hidden duplicate so refs[currentIdx] always
               // points to a capturable 1080×1350 node.
               top: 0,
-              left: 0
+              left: 0,
+              ...highlighterStyleForKind(entry.kind)
             }}
           >
             {renderSlide(i)}
