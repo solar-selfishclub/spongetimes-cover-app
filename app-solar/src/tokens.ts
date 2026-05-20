@@ -54,14 +54,77 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// Highlighter colors derived from each publisher's signature hex.
-// Alphas (0.55 main, 0.32 subtle) are inherited from the original fixed
-// orange highlighter — only the hue swaps per publisher.
-export function highlighterColors(publisher: PublisherName) {
-  const { hex } = PUBLISHERS[publisher];
+// Hex → HSL (h in [0,360], s/l in [0,1]).
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l };
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let hh: number;
+  switch (max) {
+    case r: hh = (g - b) / d + (g < b ? 6 : 0); break;
+    case g: hh = (b - r) / d + 2; break;
+    default: hh = (r - g) / d + 4;
+  }
+  return { h: hh * 60, s, l };
+}
+
+// HSL → RGB (each 0–255).
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  const hh = ((h % 360) + 360) % 360 / 360;
+  if (s === 0) {
+    const v = Math.round(l * 255);
+    return { r: v, g: v, b: v };
+  }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const hue2rgb = (t: number) => {
+    let tt = t;
+    if (tt < 0) tt += 1;
+    if (tt > 1) tt -= 1;
+    if (tt < 1 / 6) return p + (q - p) * 6 * tt;
+    if (tt < 1 / 2) return q;
+    if (tt < 2 / 3) return p + (q - p) * (2 / 3 - tt) * 6;
+    return p;
+  };
   return {
-    main: hexToRgba(hex, 0.55),
-    subtle: hexToRgba(hex, 0.32)
+    r: Math.round(hue2rgb(hh + 1 / 3) * 255),
+    g: Math.round(hue2rgb(hh) * 255),
+    b: Math.round(hue2rgb(hh - 1 / 3) * 255)
+  };
+}
+
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+
+// Highlighter colors derived from each publisher's signature hex.
+// User adjusts opacity / saturation / lightness on top of the signature color.
+//   - opacity:    0–100 (percent)             — main fill alpha
+//   - saturation: 0–200 (percent, 100 = base) — HSL saturation multiplier
+//   - lightness:  0–200 (percent, 100 = base) — HSL lightness multiplier
+// Subtle alpha stays proportional to the original 0.32/0.55 ratio so body text
+// keeps the lighter wash even when the main bar is dialed up.
+export function highlighterColors(
+  publisher: PublisherName,
+  opts: { opacity: number; saturation: number; lightness: number }
+): { main: string; subtle: string } {
+  const { hex } = PUBLISHERS[publisher];
+  const hsl = hexToHsl(hex);
+  const adjusted = hslToRgb(
+    hsl.h,
+    clamp01(hsl.s * (opts.saturation / 100)),
+    clamp01(hsl.l * (opts.lightness / 100))
+  );
+  const mainAlpha = clamp01(opts.opacity / 100);
+  const subtleAlpha = clamp01(mainAlpha * (0.32 / 0.55));
+  return {
+    main: `rgba(${adjusted.r}, ${adjusted.g}, ${adjusted.b}, ${mainAlpha})`,
+    subtle: `rgba(${adjusted.r}, ${adjusted.g}, ${adjusted.b}, ${subtleAlpha})`
   };
 }
 

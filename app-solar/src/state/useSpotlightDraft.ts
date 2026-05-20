@@ -5,6 +5,10 @@ export type SpotlightDraft = {
   publisher: PublisherName;
   week: number;
   contentType: ContentType;
+  // Highlighter color tweaks (applied on top of publisher's signature hex)
+  highlighterOpacity: number;    // 0–100, percent (alpha)
+  highlighterSaturation: number; // 0–200, percent (100 = base hue saturation)
+  highlighterLightness: number;  // 0–200, percent (100 = base hue lightness)
   // Cover
   mainTitle: string;
   mainTitleSize: number; // px
@@ -44,6 +48,9 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   publisher: '키노',
   week: 1,
   contentType: '콘텐츠 유형을 입력하세요',
+  highlighterOpacity: 55,
+  highlighterSaturation: 100,
+  highlighterLightness: 100,
   mainTitle: '콘텐츠 제목을\n입력하세요',
   mainTitleSize: 130,
   mainTitleAlign: 'left',

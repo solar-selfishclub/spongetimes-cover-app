@@ -46,13 +46,23 @@ export default function App() {
 
   // Publisher-signature highlighter color — flows through CSS vars down to
   // every <Highlight> rendered inside the app (visible + offscreen capture).
+  // Opacity/saturation/lightness tweaks let the user dial the look per draft.
   const highlighterStyle = useMemo<CSSProperties>(() => {
-    const hl = highlighterColors(draft.publisher);
+    const hl = highlighterColors(draft.publisher, {
+      opacity: draft.highlighterOpacity,
+      saturation: draft.highlighterSaturation,
+      lightness: draft.highlighterLightness
+    });
     return {
       ['--highlighter' as never]: hl.main,
       ['--highlighter-subtle' as never]: hl.subtle
     };
-  }, [draft.publisher]);
+  }, [
+    draft.publisher,
+    draft.highlighterOpacity,
+    draft.highlighterSaturation,
+    draft.highlighterLightness
+  ]);
 
   function suffixForIdx(idx: number): string {
     return order[idx].kind;
