@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from 'react';
-import { removeBackground } from '@imgly/background-removal';
 import { PUBLISHER_NAMES, PublisherName } from '../tokens';
+import { ColorKeyoutModal } from './ColorKeyoutModal';
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -175,84 +175,39 @@ export function ImageField({
   helper?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [autoRemoveBg, setAutoRemoveBg] = useState(true);
-  const [status, setStatus] = useState<'idle' | 'processing' | 'error'>('idle');
+  const [keyoutOpen, setKeyoutOpen] = useState(false);
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-
-    if (!autoRemoveBg) {
-      const dataUrl = await blobToDataUrl(file);
-      onChange(dataUrl);
-      return;
-    }
-
-    setStatus('processing');
-    try {
-      const cleaned = await removeBackground(file);
-      const dataUrl = await blobToDataUrl(cleaned);
-      onChange(dataUrl);
-      setStatus('idle');
-    } catch (err) {
-      console.error('background removal failed', err);
-      const fallback = await blobToDataUrl(file);
-      onChange(fallback);
-      setStatus('error');
-    }
+    const dataUrl = await blobToDataUrl(file);
+    onChange(dataUrl);
   }
-
-  const processing = status === 'processing';
 
   return (
     <div className="field">
       <label>{label}</label>
-      <div
-        className="image-drop"
-        onClick={() => !processing && inputRef.current?.click()}
-        style={processing ? { opacity: 0.6, cursor: 'wait' } : undefined}
-      >
-        {processing ? (
-          <span>배경 제거 중… (첫 실행은 모델 다운로드로 10초 정도 걸려요)</span>
-        ) : value ? (
-          <img src={value} alt="" />
-        ) : (
-          <span>클릭해서 이미지 업로드 (PNG/JPG)</span>
-        )}
+      <div className="image-drop" onClick={() => inputRef.current?.click()}>
+        {value ? <img src={value} alt="" /> : <span>클릭해서 이미지 업로드 (PNG/JPG)</span>}
       </div>
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginTop: 6,
-          fontSize: 12,
-          color: '#555',
-          cursor: 'pointer'
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={autoRemoveBg}
-          onChange={(e) => setAutoRemoveBg(e.target.checked)}
-        />
-        업로드 시 배경 자동 제거 (누끼)
-      </label>
-      {status === 'error' && (
-        <div className="helper" style={{ color: '#c0392b' }}>
-          배경 제거에 실패해 원본을 사용합니다.
-        </div>
-      )}
       {value && (
-        <button
-          type="button"
-          className="btn btn-ghost btn-small"
-          style={{ marginTop: 6 }}
-          onClick={() => onChange(null)}
-        >
-          이미지 제거
-        </button>
+        <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-small"
+            onClick={() => setKeyoutOpen(true)}
+          >
+            누끼 / AI 생성
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-small"
+            onClick={() => onChange(null)}
+          >
+            이미지 제거
+          </button>
+        </div>
       )}
       <input
         ref={inputRef}
@@ -262,6 +217,16 @@ export function ImageField({
         onChange={handleFile}
       />
       {helper && <div className="helper">{helper}</div>}
+      {keyoutOpen && value && (
+        <ColorKeyoutModal
+          src={value}
+          onCancel={() => setKeyoutOpen(false)}
+          onApply={(dataUrl) => {
+            onChange(dataUrl);
+            setKeyoutOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
