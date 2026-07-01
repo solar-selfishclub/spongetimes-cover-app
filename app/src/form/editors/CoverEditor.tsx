@@ -1,6 +1,6 @@
 import { CONTENT_TYPE_SUGGESTIONS } from '../../tokens';
 import { SpotlightDraft } from '../../state/useSpotlightDraft';
-import { TextField, ImageField, NumberField, RangeField, SelectField } from '../fields';
+import { TextField, ImageField, VideoField, NumberField, RangeField, SelectField } from '../fields';
 import { CharacterPromptCopy } from '../../character/CharacterPromptCopy';
 
 type Props = {
@@ -103,6 +103,40 @@ export function CoverEditor({ draft, update }: Props) {
         slideType="cover"
         title="표지 캐릭터 프롬프트"
       />
+
+      <hr className="editor-divider" />
+      <VideoField
+        label="표지 영상 (별도 슬롯)"
+        value={draft.coverVideoUrl}
+        onChange={(v) => update('coverVideoUrl', v)}
+        helper="캐릭터 이미지와 별개로 표지에 영상을 얹습니다. 미리보기에서 자동 재생/루프되며, 'MP4 내보내기'로 영상 표지를 저장할 수 있어요. (새로고침 시 영상은 다시 올려야 함)"
+      />
+      <RangeField
+        label="영상 크기"
+        value={draft.coverVideoSize}
+        min={15}
+        max={90}
+        unit="%"
+        onChange={(v) => update('coverVideoSize', v)}
+      />
+      <div className="field-row">
+        <RangeField
+          label="영상 가로 위치 (X)"
+          value={draft.coverVideoX}
+          min={0}
+          max={100}
+          unit="%"
+          onChange={(v) => update('coverVideoX', v)}
+        />
+        <RangeField
+          label="영상 세로 위치 (Y)"
+          value={draft.coverVideoY}
+          min={0}
+          max={100}
+          unit="%"
+          onChange={(v) => update('coverVideoY', v)}
+        />
+      </div>
     </div>
   );
 }

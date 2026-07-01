@@ -15,6 +15,11 @@ export type SpotlightDraft = {
   coverCharacterX: number; // 0–100, percent from left (anchors character center)
   coverCharacterY: number; // 0–100, percent from top (anchors character center)
   coverCharacterSize: number; // percent of canvas width (10–80)
+  // Cover video (separate slot from the character image)
+  coverVideoUrl: string | null; // object URL — NOT persisted (too large for localStorage)
+  coverVideoX: number; // 0–100, percent from left (anchors video center)
+  coverVideoY: number; // 0–100, percent from top (anchors video center)
+  coverVideoSize: number; // percent of canvas width (15–90)
   // CTA
   ctaLabel: string;
   ctaQuestion: string;
@@ -53,6 +58,10 @@ export const DEFAULT_DRAFT: SpotlightDraft = {
   coverCharacterX: 72,
   coverCharacterY: 67,
   coverCharacterSize: 64,
+  coverVideoUrl: null,
+  coverVideoX: 32,
+  coverVideoY: 52,
+  coverVideoSize: 50,
   ctaLabel: '💬 댓글로 이야기해요',
   ctaQuestion: '오늘 소개된 6명 중\n가장 인상 깊었던 분은?\n댓글로 응원 보내주세요 👏',
   ctaQuestionHighlight: '가장 인상 깊었던 분',
@@ -94,7 +103,10 @@ export function useSpotlightDraft() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+      // coverVideoUrl is an in-memory object URL: too large to store and invalid
+      // after a reload, so it is intentionally excluded from persistence.
+      const { coverVideoUrl: _omitVideo, ...persistable } = draft;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
     } catch {
       // localStorage might be full or unavailable — silently skip
     }

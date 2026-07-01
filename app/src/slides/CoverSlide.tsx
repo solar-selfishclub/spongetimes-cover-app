@@ -17,6 +17,10 @@ export type CoverSlideProps = {
   characterX?: number;        // 0-100 percent from left (center anchor)
   characterY?: number;        // 0-100 percent from top (center anchor)
   characterSize?: number;     // percent width, default 42
+  videoUrl?: string | null;   // object URL for the cover video slot
+  videoX?: number;            // 0-100 percent from left (center anchor)
+  videoY?: number;            // 0-100 percent from top (center anchor)
+  videoSize?: number;         // percent width
 };
 
 export const CoverSlide = forwardRef<HTMLDivElement, CoverSlideProps>(function CoverSlide(
@@ -32,7 +36,11 @@ export const CoverSlide = forwardRef<HTMLDivElement, CoverSlideProps>(function C
     characterImage,
     characterX = 72,
     characterY = 67,
-    characterSize = 64
+    characterSize = 64,
+    videoUrl,
+    videoX = 32,
+    videoY = 52,
+    videoSize = 50
   },
   ref
 ) {
@@ -111,6 +119,29 @@ export const CoverSlide = forwardRef<HTMLDivElement, CoverSlideProps>(function C
           <Highlight text={mainTitle} words={highlightWords} />
         </div>
       </div>
+
+      {/* Video slot — positioned by X/Y percent (center-anchored), muted autoplay loop */}
+      {videoUrl && (
+        <video
+          className="cover-video"
+          src={videoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            position: 'absolute',
+            zIndex: 1,
+            left: `${videoX}%`,
+            top: `${videoY}%`,
+            transform: 'translate(-50%, -50%)',
+            width: `${videoSize}%`,
+            height: 'auto',
+            objectFit: 'contain',
+            pointerEvents: 'none'
+          }}
+        />
+      )}
 
       {/* Character — positioned by X/Y percent (center-anchored) */}
       {characterImage && (
