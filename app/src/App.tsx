@@ -7,6 +7,7 @@ import { CoverSlide } from './slides/CoverSlide';
 import { CtaSlide } from './slides/CtaSlide';
 import { downloadSlide } from './export/slideToPng';
 import { downloadAllAsZip } from './export/downloadAll';
+import { downloadCoverAsVideo } from './export/coverToVideo';
 import { buildSlideOrder } from './slideOrder';
 
 const ACTIVE_SCALE = 0.55; // 1080 * 0.55 = 594, 1350 * 0.55 = 742.5
@@ -72,6 +73,25 @@ export default function App() {
     }
   }
 
+  async function captureCoverVideo(idx: number) {
+    const node = slideRefs.current[idx]?.current;
+    if (!node || !draft.coverVideoUrl) return;
+    setExporting(true);
+    try {
+      await downloadCoverAsVideo(node, {
+        videoUrl: draft.coverVideoUrl,
+        xPct: draft.coverVideoX,
+        yPct: draft.coverVideoY,
+        sizePct: draft.coverVideoSize,
+        filename: `spongetimes-W${draft.week}-${draft.publisher}-cover.mp4`
+      });
+    } catch (err) {
+      alert(`MP4 내보내기에 실패했어요: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function renderSlide(idx: number) {
     const entry = order[idx];
     switch (entry.kind) {
@@ -90,6 +110,10 @@ export default function App() {
             characterX={draft.coverCharacterX}
             characterY={draft.coverCharacterY}
             characterSize={draft.coverCharacterSize}
+            videoUrl={draft.coverVideoUrl}
+            videoX={draft.coverVideoX}
+            videoY={draft.coverVideoY}
+            videoSize={draft.coverVideoSize}
           />
         );
       case 'cta':
@@ -212,6 +236,17 @@ export default function App() {
             >
               PNG 다운로드
             </button>
+            {order[currentIdx]?.kind === 'cover' && (
+              <button
+                type="button"
+                className="btn"
+                onClick={() => captureCoverVideo(currentIdx)}
+                disabled={exporting || !draft.coverVideoUrl}
+                title={draft.coverVideoUrl ? '' : '먼저 표지 영상을 업로드하세요'}
+              >
+                {exporting ? '내보내는 중…' : '표지 MP4'}
+              </button>
+            )}
           </div>
 
           {/* Page dots */}

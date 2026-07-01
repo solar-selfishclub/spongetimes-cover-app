@@ -263,7 +263,8 @@ input, textarea, select {
   background: #FFFBE8;
 }
 
-.image-drop img {
+.image-drop img,
+.image-drop video {
   max-width: 100%;
   max-height: 100px;
   border-radius: 4px;

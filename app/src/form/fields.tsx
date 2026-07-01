@@ -153,6 +153,66 @@ export function SelectField<T extends string>({
   );
 }
 
+export function VideoField({
+  label,
+  value,
+  onChange,
+  helper
+}: {
+  label: string;
+  value: string | null;
+  onChange: (objectUrl: string | null) => void;
+  helper?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Release the previously held object URL before creating a new one.
+    if (value && value.startsWith('blob:')) URL.revokeObjectURL(value);
+    onChange(URL.createObjectURL(file));
+    // Allow re-selecting the same file later.
+    e.target.value = '';
+  }
+
+  function clear() {
+    if (value && value.startsWith('blob:')) URL.revokeObjectURL(value);
+    onChange(null);
+  }
+
+  return (
+    <div className="field">
+      <label>{label}</label>
+      <div className="image-drop" onClick={() => inputRef.current?.click()}>
+        {value ? (
+          <video src={value} autoPlay loop muted playsInline />
+        ) : (
+          <span>클릭해서 영상 업로드 (MP4/WebM/MOV)</span>
+        )}
+      </div>
+      {value && (
+        <button
+          type="button"
+          className="btn btn-ghost btn-small"
+          style={{ marginTop: 6 }}
+          onClick={clear}
+        >
+          영상 제거
+        </button>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/*"
+        style={{ display: 'none' }}
+        onChange={handleFile}
+      />
+      {helper && <div className="helper">{helper}</div>}
+    </div>
+  );
+}
+
 export function ImageField({
   label,
   value,
